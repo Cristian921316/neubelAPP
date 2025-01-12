@@ -1,0 +1,114 @@
+﻿@page "/clientes"
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject ServiceClientes ClienteService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>Clientes</PageTitle>
+
+<h1>CLIENTES</h1>
+
+
+<!-- Filtro de búsqueda -->
+
+<div class="row">
+    <div class="col-9">
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text" id="addon-wrapping">Buscar</span>
+            <input type="text" class="form-control" placeholder="Por nombre, apellido, sector..." aria-describedby="addon-wrapping" @bind="searchTerm" />
+        </div>
+    </div>
+
+   <!-- <div class="col-3">
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">Agregar</button>
+     </div> -->
+
+ </div>
+
+<!--modal de ejemplo para ingreso-->
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar-Clientes</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@if (clientes == null)
+{
+    // <p>Cargando clientes...</p> 
+}
+else if (clientes.Count == 0)
+{
+    <p>No hay clientes disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>SECTOR</th>
+                <th>ACCION</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in FiltrarClientes)
+            {
+                <tr>
+                    <td>@cliente.adcu_code</td>
+                    <td>@cliente.adcu_name</td>
+                    <td>@cliente.adcu_direction</td>
+                    <td>
+                        <!-- Botón de editar -->
+                            <button class="btn btn-success btn-sm" @onclick="() => EditarCliente(cliente.adcu_code)">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>                        
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+}
+
+@code {
+    // Aquí debes declarar la variable
+    private List<Clientes> clientes;
+    private string searchTerm = string.Empty;
+
+    // Este método se ejecuta cuando el componente se inicializa
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await ClienteService.GetClientesAsync();
+        
+    }
+
+    private void EditarCliente(int id)
+    {
+        NavigationManager.NavigateTo($"/RegistrarClientes/{id}");
+    }
+
+    private IEnumerable<Clientes> FiltrarClientes =>
+        clientes.Where(cliente => string.IsNullOrEmpty(searchTerm) || cliente.adcu_name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || cliente.adcu_direction.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+}

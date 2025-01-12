@@ -1,0 +1,211 @@
+﻿@page "/RegistrarPago"
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@rendermode InteractiveServer
+@inject ServiceClientes ClienteService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject PagoServices pagoService;
+@attribute [Authorize]
+
+<h3>RegistrarPago</h3>
+
+@if (mostrarMensaje)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Se ha guardado con exito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (mesageError)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        Comprobante ya registrado!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+
+<div class="container mt-5">
+    <div class="border p-4 rounded">
+
+        <EditForm id="registroForm" Model="@nuevoPago" OnValidSubmit="guardarPago">
+
+            
+
+            <div class="mb-3">
+                <label for="cliente" class="form-label">Buscar Cliente</label>
+                <InputText id="cliente" class="form-control" autocomplete="off" @bind-Value="busquedaCliente" @oninput="FiltrarClientes" />
+                <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
+                    @foreach (var cliente in clientesFiltrados)
+                    {
+                        <li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
+                            @cliente.adcu_name
+                        </li>
+                    }
+                </ul>
+            </div>
+
+           
+
+            <!-- Campo Nombre -->
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Periodo</label>
+                <select class="form-select" @bind="nuevoPago.adat_periodopago">
+                    @foreach (var mes in meses)
+                    {
+                        <option value="@mes">@mes</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Tipo Pago</label>
+                <select class="form-select" @bind="nuevoPago.adat_tipopago">
+                    @foreach (var tipo in tipoPago)
+                    {
+                        <option value="@tipo">@tipo</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Campo Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Comprobante</label>
+                <input type="text" class="form-control" @bind="nuevoPago.adat_comprobante" id="comprobante" name="comprobante" placeholder="Ingresa comprobante" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Valor</label>
+                <input type="number" class="form-control" @bind="nuevoPago.adat_valor" id="valor" name="valor" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Observacion</label>
+                <input type="text" class="form-control" @bind="nuevoPago.adat_descripcion" id="descripcion" name="descripcion"  required>
+            </div>
+
+            <!-- Botón Guardar -->
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </EditForm>
+    </div>
+</div>
+
+
+
+@code {
+
+    private PagoTrx nuevoPago = new PagoTrx();
+    private List<PagoTrx> listaPagos = new List<PagoTrx>();
+    private PagoTrx pagoFind = null;
+    private bool mostrarMensaje = false;
+    private bool mesageError = false;
+
+    private List<Clientes> clientes = new List<Clientes>();
+    private List<Clientes> clientesFiltrados = new();
+    private string searchTerm = string.Empty;
+
+    // private List<Cliente> clientesFiltrados = new();
+    private string busquedaCliente = string.Empty;
+    private Clientes? clienteSeleccionado;
+    private bool mostrarSugerencias = false;
+
+    // Este método se ejecuta cuando el componente se inicializa
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await ClienteService.GetClientesAsync();
+        //listaPagos = await pagoService.getPagosAll();
+
+    }
+
+
+
+    private void FiltrarClientes(ChangeEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(busquedaCliente))
+        {
+            clientesFiltrados.Clear();
+            mostrarSugerencias = false;
+            return;
+        }
+
+        clientesFiltrados = clientes
+            .Where(c => c.adcu_name.Contains(busquedaCliente, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        mostrarSugerencias = clientesFiltrados.Any();
+    }
+
+    private void SeleccionarCliente(Clientes cliente)
+    {
+        clienteSeleccionado = cliente;
+        busquedaCliente = cliente.adcu_name;
+        mostrarSugerencias = false;
+    }
+
+
+
+    private List<string> meses = new List<string>
+    {
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    };
+
+    private List<string> tipoPago = new List<string>
+    {
+        "TRANSFERENCIA", "EFECTIVO", "OTRO"
+    };
+
+
+
+    private string mesSeleccionado = "ENERO";
+    private string tipoPagoSelecc = "TRANSFERENCIA";
+
+
+    private async Task guardarPago()
+    {
+        nuevoPago.adbu_codigo = 1;
+        nuevoPago.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
+        nuevoPago.adcu_code = clienteSeleccionado.adcu_code;
+
+
+        //se realiza validacion si el comprobante no existe antes de guardar
+        listaPagos = await pagoService.getPagosAll();
+
+        pagoFind = listaPagos
+            .Where(c => c.adat_comprobante.Contains(nuevoPago.adat_comprobante, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
+
+        if (pagoFind == null)
+        {
+            await pagoService.guardarPago(nuevoPago);
+            mostrarMensaje = true;
+            //Navigation.NavigateTo("/clientes");
+            StateHasChanged();
+            nuevoPago = new PagoTrx();
+            busquedaCliente = "";
+
+
+            await Task.Delay(2000);
+            mostrarMensaje = false;
+            StateHasChanged();
+
+        }
+        else
+        {
+            mesageError = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            mesageError = false;
+            StateHasChanged();
+        }
+
+
+        
+    }
+
+}

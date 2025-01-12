@@ -1,0 +1,111 @@
+﻿@page "/RegistrarClientes/{ClienteId:int?}"
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@rendermode InteractiveServer
+@inject ServiceClientes ClienteService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<h3>@(ClienteId.HasValue ? "Editar Cliente" : "Registrar Cliente")</h3>
+
+@if (mostrarMensaje)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Cliente registrado con éxito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-5">
+    <div class="border p-4 rounded">
+
+        <EditForm id="registroForm" Model="@nuevoCliente" OnValidSubmit="GuardarCliente">
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Cedula</label>
+            <input type="text" class="form-control"  @bind="nuevoCliente.adcu_nationalid" id="cedula" name="cedula" placeholder="Ingresa cedula" required>
+        </div>
+
+
+        <!-- Campo Nombre -->
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" @bind="nuevoCliente.adcu_name" id="nombre" name="nombre" placeholder="Ingresa nombre" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Telefono</label>
+                <input type="text" class="form-control" @bind="nuevoCliente.adcu_phone" id="telefono" name="telefono" placeholder="Ingresa telefono" required>
+        </div>
+
+        <!-- Campo Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" @bind="nuevoCliente.adcu_email" id="email" name="email" placeholder="Ingresa tu email" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Direccion</label>
+                <input type="text" class="form-control" @bind="nuevoCliente.adcu_direction" id="direccion" name="direccion" placeholder="Ingresa direccion" required>
+        </div>
+
+        <!-- Botón Guardar -->
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </EditForm>
+</div>
+</div>
+
+
+
+
+@code {
+    [Parameter]
+    public int? ClienteId { get; set; }
+
+    private Clientes nuevoCliente = new Clientes();   
+    private bool mostrarMensaje = false;
+    private ServiceClientes serviceClientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ClienteId.HasValue)
+        {
+            nuevoCliente =  await ClienteService.getById(ClienteId.Value);
+
+            if (nuevoCliente == null)
+            {
+               // Navigation.NavigateTo("/clientes");
+                NavigationManager.NavigateTo("/clientes");
+            }
+        }
+    }
+
+
+
+    private async Task GuardarCliente()
+    {
+        try
+        {
+            nuevoCliente.adbu_code = 1;
+            nuevoCliente.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
+            await ClienteService.GuardarCliente(nuevoCliente);
+            mostrarMensaje = true;
+            //Navigation.NavigateTo("/clientes");
+            StateHasChanged();
+            nuevoCliente = new Clientes();
+            // Desvanecer el mensaje después de 3 segundos
+            await Task.Delay(2000);
+            mostrarMensaje = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Manejo de errores
+            Console.WriteLine($"Error al guardar el cliente: {ex.Message}");
+        }
+    }
+}
