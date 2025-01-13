@@ -4,16 +4,7 @@
 
 <PageTitle>Home</PageTitle>
 
-<script>
-    window.BlazorDownloadFile = (filename, data) => {
-        const blob = new Blob([new Uint8Array(data)], { type: 'application/octet-stream' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
-    };
-</script>
+
 
 
 <head>

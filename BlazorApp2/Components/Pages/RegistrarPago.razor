@@ -39,7 +39,7 @@
 
             <div class="mb-3">
                 <label for="cliente" class="form-label">Buscar Cliente</label>
-                <InputText id="cliente" class="form-control" autocomplete="off" @bind-Value="busquedaCliente" @oninput="FiltrarClientes" />
+                <InputText id="cliente" class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
                 <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
                     @foreach (var cliente in clientesFiltrados)
                     {
@@ -119,14 +119,15 @@
     {
         clientes = await ClienteService.GetClientesAsync();
         //listaPagos = await pagoService.getPagosAll();
-
+        nuevoPago.adat_periodopago = mesSeleccionado;
+        nuevoPago.adat_tipopago = tipoPagoSelecc;
     }
 
 
 
-    private void FiltrarClientes(ChangeEventArgs e)
+    private void FiltrarClientes(string busqueda)
     {
-        if (string.IsNullOrWhiteSpace(busquedaCliente))
+        if (string.IsNullOrWhiteSpace(busqueda))
         {
             clientesFiltrados.Clear();
             mostrarSugerencias = false;
@@ -134,7 +135,7 @@
         }
 
         clientesFiltrados = clientes
-            .Where(c => c.adcu_name.Contains(busquedaCliente, StringComparison.OrdinalIgnoreCase))
+            .Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         mostrarSugerencias = clientesFiltrados.Any();
@@ -165,13 +166,16 @@
     private string mesSeleccionado = "ENERO";
     private string tipoPagoSelecc = "TRANSFERENCIA";
 
+    //se coloca el por defecto al objeto
+    
+
 
     private async Task guardarPago()
     {
         nuevoPago.adbu_codigo = 1;
         nuevoPago.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
         nuevoPago.adcu_code = clienteSeleccionado.adcu_code;
-
+        nuevoPago.adat_datecreated = DateTime.Now;
 
         //se realiza validacion si el comprobante no existe antes de guardar
         listaPagos = await pagoService.getPagosAll();
