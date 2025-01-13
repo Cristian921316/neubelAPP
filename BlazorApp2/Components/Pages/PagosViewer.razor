@@ -43,7 +43,7 @@
                 <label for="total" class="form-label mb-0 me-2">Total:</label>
                     <input type="text" class="form-control" id="total" @bind-value=@total disabled style="width: 100px;">
 
-                    <button class="btn btn-primary  mb-0 me-2">
+                    <button class="btn btn-primary  mb-0 me-2" @onclick="DescargarExcel">
                         <i class="bi bi-file-earmark-arrow-down me-2"></i>
                         Exportar
                     </button>
@@ -107,7 +107,7 @@ else
     {
         pagosViewer = await servicePagos.getPagosViewer(1);
         pagosFiltrado = pagosViewer;
-        total = pagosViewer.Count();
+
         contarPagos();
     }
 
@@ -125,6 +125,7 @@ else
             else pendiente += 1;
 
         }
+        total = pagado + pendiente;
     }
 
     private void filtrarPagos(bool selection)
@@ -168,7 +169,12 @@ else
         }
     }
 
+    [Inject] private ExportService ExportService { get; set; }
 
+    private async Task DescargarExcel()
+    {
+        await ExportService.ExportarAExcel(pagosFiltrado);
+    }
 
 
 

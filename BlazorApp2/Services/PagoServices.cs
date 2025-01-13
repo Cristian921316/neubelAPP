@@ -3,7 +3,9 @@
     using BlazorApp2.Components.Pages;
     using BlazorApp2.Data;
     using BlazorApp2.Models;
+    using ClosedXML.Excel;
     using Microsoft.EntityFrameworkCore;
+    using System.IO;
     public class PagoServices
     {
         private readonly ApplicationDbContext _context;
@@ -39,6 +41,24 @@
                 return false;
             }
         }
+
+        public async Task ExportarExcel(List<ViewerPagoTrx> pagos)
+        {
+            try
+            {
+               
+
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+
+
+        }
+
+
 
     }
 }

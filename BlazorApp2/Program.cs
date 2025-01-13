@@ -14,6 +14,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<ServiceClientes>();
 builder.Services.AddScoped<PagoServices>();
+builder.Services.AddScoped<ExportService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();

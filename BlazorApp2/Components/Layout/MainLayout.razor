@@ -10,6 +10,18 @@
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div> -->
 
+        <script>
+            window.BlazorDownloadFile = (filename, data) => {
+                const blob = new Blob([new Uint8Array(data)], { type: 'application/octet-stream' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            };
+        </script>
+
+
         <article class="content px-4">
             @Body
         </article>
