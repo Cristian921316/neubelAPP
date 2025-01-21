@@ -55,7 +55,7 @@
             <!-- Campo Nombre -->
             <div class="mb-3">
                 <label for="nombre" class="form-label">Periodo</label>
-                <select class="form-select" @bind="nuevoPago.adat_periodopago">
+                <select class="form-select" @bind=@mesSeleccionado>
                     @foreach (var mes in meses)
                     {
                         <option value="@mes">@mes</option>
@@ -65,7 +65,7 @@
 
             <div class="mb-3">
                 <label for="nombre" class="form-label">Tipo Pago</label>
-                <select class="form-select" @bind="nuevoPago.adat_tipopago">
+                <select class="form-select" @bind=@tipoPagoSelecc>
                     @foreach (var tipo in tipoPago)
                     {
                         <option value="@tipo">@tipo</option>
@@ -165,7 +165,7 @@
 
     private string mesSeleccionado = "ENERO";
     private string tipoPagoSelecc = "TRANSFERENCIA";
-
+    
     //se coloca el por defecto al objeto
     
 
@@ -176,6 +176,9 @@
         nuevoPago.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
         nuevoPago.adcu_code = clienteSeleccionado.adcu_code;
         nuevoPago.adat_datecreated = DateTime.Now;
+
+        nuevoPago.adat_periodopago = mesSeleccionado;
+        nuevoPago.adat_tipopago = tipoPagoSelecc;
 
         //se realiza validacion si el comprobante no existe antes de guardar
         listaPagos = await pagoService.getPagosAll();

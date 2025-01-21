@@ -1,5 +1,10 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@inject PagoServices servicePagos
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
@@ -10,16 +15,138 @@
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Chart.js -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="chart-config.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<h1>
-    Bienvenido a NeubelPay
-</h1>
+<h1>Bienvenido   </h1> 
+
+<div style="text-align: center;">
+<img src="images/LgLogo.jpg" width="200" a />
+</div>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card">
+						<h5 class="card-header">
+							Porcentaje Pagos
+						</h5>
+						<div class="card-body">
+							<p class="card-text">
+
+								<div class="d-flex justify-content-center">
+									<canvas id="graficoPastel" width="200" height="200"></canvas>
+								</div>
+
+							</p>
+						</div>
+						<div class="card-footer">
+							
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card">
+						<h5 class="card-header">
+							Detalle Pagos
+						</h5>
+						<div class="card-body">
+							<p class="card-text">
+								<div>
+									<label for="total" class="form-label mb-0 me-2">Total Recaudado $</label>
+									<input type="number" class="form-control" id="total" @bind="totalRecaudado" disabled style="width: 100px;">
+								</div>
+
+								<div>
+									<label for="pendiente" class="form-label mb-0 me-2"># Pendientes</label>
+									<input type="number" class="form-control" id="pendiente" @bind="pendiente" disabled style="width: 100px;">
+								</div>
+								<div>
+									<label for="pagado" class="form-label mb-0 me-2"># Pagados</label>
+									<input type="number" class="form-control" id="pagado" @bind="pagado" disabled style="width: 100px;">
+								</div>
+							</p>
+						</div>
+						<div class="card-footer">
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
 
-<AuthorizeView>
- <Authorized>
-<img src="images/LgLogo.jpg" width="350" />
-</Authorized>
-</AuthorizeView>
+@code {
+	// Datos dinámicos
+	private string[] etiquetas = { "Pagado", "Pendiente" };
+	private List<decimal?> valores = new List<decimal?>();
+	private int[] valoresArreglo = { 45, 55 };
+	private List<ViewerPagoTrx> pagosViewer;
+	private decimal? total, pagado, pendiente;
+	private decimal? porcenPagado, porcenPendiente,totalRecaudado;
+
+
+
+
+	private void contarPagos()
+	{
+		pagado = 0;
+		pendiente = 0;
+		totalRecaudado = 0;
+		foreach (var pagos in pagosViewer)
+		{
+			if (!pagos.comprobante.Equals("PENDIENTE"))
+			{
+				pagado += 1;
+				totalRecaudado += pagos.valor;
+
+			}
+			else
+			{
+				pendiente += 1;
+
+
+			}
+
+		}
+		total = pagado + pendiente;
+		porcenPagado = (pagado / total) * 100;
+		porcenPendiente = (pendiente / total) * 100;		
+		valores.Add(porcenPagado);
+		valores.Add(porcenPendiente);
+
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{		
+		pagosViewer = await servicePagos.getPagosViewer(1);
+		contarPagos();
+
+		if (firstRender)
+		{
+			// Llama al método de JavaScript para crear el gráfico
+			await JSRuntime.InvokeVoidAsync("crearGraficoPastel", etiquetas, valores.ToArray());
+			StateHasChanged();
+		}
+		else
+		{
+			StateHasChanged();
+			
+		}
+
+
+		
+		
+	}
+
+	
+
+}

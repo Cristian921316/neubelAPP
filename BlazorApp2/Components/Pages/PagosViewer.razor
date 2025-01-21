@@ -29,10 +29,14 @@
             <div class="p-3 border bg-light">
                 <div class="form-group">
                     <div class="form-group d-flex align-items-center">
-                    <label for="total" class="form-label mb-0 me-2">Pendiente:</label>
-                        <input type="text" class="form-control" id="total" @bind-value=@pendiente disabled style="width: 100px;">
-                        <label for="total" class="form-label mb-0 me-2">Pagado:</label>
-                        <input type="text" class="form-control" id="total" @bind-value=@pagado disabled style="width: 100px;">
+                        <div>
+                        <label for="pendiente" class="form-label mb-0 me-2">Pendiente:</label>
+                        <input type="text" class="form-control" id="pendiente" @bind-value=@pendiente disabled style="width: 100px;">
+                        </div>
+                        <div>
+                        <label for="pagado" class="form-label mb-0 me-2">Pagado:</label>
+                        <input type="text" class="form-control" id="pagado" @bind-value=@pagado disabled style="width: 100px;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,12 +81,8 @@
     @if (pagosFiltrado == null)
     {
         // <p>Cargando clientes...</p>
-    }
-    else if (pagosFiltrado.Count == 0)
-    {
-       // <p>No hay clientes disponibles.</p>
-    }
-    else
+    }    
+   else if (pagosFiltrado.Count > 0)
     {
         <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover">
@@ -134,7 +134,7 @@
     private int total, pagado, pendiente;
     private bool filtroAplicado = false;
     private static string searchTerm;
-    private List<ViewerPagoTrx> pagosFiltrado;
+    private List<ViewerPagoTrx> pagosFiltrado = new List<ViewerPagoTrx>();
 
     protected override async Task OnInitializedAsync()
     {
