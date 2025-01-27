@@ -6,6 +6,7 @@
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 @rendermode InteractiveServer
 @inject ServiceClientes ClienteService
+@inject NegocioService serviceNegocio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -69,9 +70,19 @@
     private Clientes nuevoCliente = new Clientes();   
     private bool mostrarMensaje = false;
     private ServiceClientes serviceClientes;
+    private Negocio negocio;
+    private string idUser;
+   
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        //se recupera el negocio por el usuario logeado
+        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+
+
         if (ClienteId.HasValue)
         {
             nuevoCliente =  await ClienteService.getById(ClienteId.Value);
@@ -90,8 +101,8 @@
     {
         try
         {
-            nuevoCliente.adbu_code = 1;
-            nuevoCliente.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
+            nuevoCliente.adbu_code = negocio.adbu_code;
+            nuevoCliente.adus_code = idUser;
             await ClienteService.GuardarCliente(nuevoCliente);
             mostrarMensaje = true;
             //Navigation.NavigateTo("/clientes");

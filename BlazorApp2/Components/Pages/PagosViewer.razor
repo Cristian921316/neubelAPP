@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @inject PagoServices servicePagos
+@inject NegocioService serviceNegocio
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
 
@@ -135,10 +137,17 @@
     private bool filtroAplicado = false;
     private static string searchTerm;
     private List<ViewerPagoTrx> pagosFiltrado = new List<ViewerPagoTrx>();
+    private Negocio negocio;
 
     protected override async Task OnInitializedAsync()
     {
-        pagosViewer = await servicePagos.getPagosViewer(1);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        //se recupera el negocio por el usuario logeado
+        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+
+
+        pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code);
         pagosFiltrado = pagosViewer;
 
         contarPagos();

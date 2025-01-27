@@ -13,10 +13,11 @@
             _context = context;
         }
 
-        public async Task<List<Clientes>> GetClientesAsync()
+        public async Task<List<Clientes>> GetClientesAsync(int idNegocio)
         {
-            return await _context.Clientes.ToListAsync();
-        }
+			return await _context.Clientes.Where(c=> c.adbu_code == idNegocio).ToListAsync();			
+
+		}
 
         public async Task<Clientes?> getById(int id)
         {
