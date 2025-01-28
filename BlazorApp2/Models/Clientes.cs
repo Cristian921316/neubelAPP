@@ -36,6 +36,9 @@ namespace BlazorApp2.Models
         [Column("ADCU_DATEUPDATE")]
         public DateTime? adcu_dateupdate { get; set; }
 
+        [Column("ADCU_ESTADO")]
+        public bool adcu_estado { get; set; }
+
 
 
     }

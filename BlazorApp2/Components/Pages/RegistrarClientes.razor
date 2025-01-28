@@ -28,7 +28,7 @@
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Cedula</label>
-            <input type="text" class="form-control"  @bind="nuevoCliente.adcu_nationalid" id="cedula" name="cedula" placeholder="Ingresa cedula" required>
+            <input type="text" class="form-control"  @bind="nuevoCliente.adcu_nationalid" id="cedula" name="cedula" placeholder="Ingresa cedula">
         </div>
 
 
@@ -40,19 +40,27 @@
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Telefono</label>
-                <input type="text" class="form-control" @bind="nuevoCliente.adcu_phone" id="telefono" name="telefono" placeholder="Ingresa telefono" required>
+                <input type="text" class="form-control" @bind="nuevoCliente.adcu_phone" id="telefono" name="telefono" placeholder="Ingresa telefono">
         </div>
 
         <!-- Campo Email -->
         <div class="mb-3">
             <label for="email" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" @bind="nuevoCliente.adcu_email" id="email" name="email" placeholder="Ingresa tu email" required>
+                <input type="email" class="form-control" @bind="nuevoCliente.adcu_email" id="email" name="email" placeholder="Ingresa tu email">
         </div>
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Direccion</label>
                 <input type="text" class="form-control" @bind="nuevoCliente.adcu_direction" id="direccion" name="direccion" placeholder="Ingresa direccion" required>
         </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind="nuevoCliente.adcu_estado">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Estado</label>
+                </div>
+            </div>
+
 
         <!-- Botón Guardar -->
         <button type="submit" class="btn btn-primary">Guardar</button>
@@ -67,12 +75,12 @@
     [Parameter]
     public int? ClienteId { get; set; }
 
-    private Clientes nuevoCliente = new Clientes();   
-    private bool mostrarMensaje = false;
+    private Clientes nuevoCliente = new Clientes();  
+    private bool mostrarMensaje = false,guardarOK=true;
     private ServiceClientes serviceClientes;
     private Negocio negocio;
     private string idUser;
-   
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,13 +93,19 @@
 
         if (ClienteId.HasValue)
         {
-            nuevoCliente =  await ClienteService.getById(ClienteId.Value);
+            nuevoCliente = await ClienteService.getById(ClienteId.Value);
+            guardarOK = false;//es modificar
 
             if (nuevoCliente == null)
             {
-               // Navigation.NavigateTo("/clientes");
+                // Navigation.NavigateTo("/clientes");
                 NavigationManager.NavigateTo("/clientes");
             }
+        }
+        else //se trata de un nuevo cliente
+        {
+            // nuevoCliente = new Clientes();
+
         }
     }
 
@@ -103,11 +117,18 @@
         {
             nuevoCliente.adbu_code = negocio.adbu_code;
             nuevoCliente.adus_code = idUser;
-            await ClienteService.GuardarCliente(nuevoCliente);
+
+
+            //se marca como modificado
+
+
+            await ClienteService.GuardarCliente(nuevoCliente, guardarOK);
             mostrarMensaje = true;
             //Navigation.NavigateTo("/clientes");
             StateHasChanged();
             nuevoCliente = new Clientes();
+            //si se crea un nuevo cliente se envia la bandera como creacion
+            guardarOK = true;
             // Desvanecer el mensaje después de 3 segundos
             await Task.Delay(2000);
             mostrarMensaje = false;

@@ -35,11 +35,21 @@
         }
 
 
-        public async Task<bool> GuardarCliente(Clientes cliente)
+        public async Task<bool> GuardarCliente(Clientes cliente, bool guardarOK)
         {
             try
             {
-                await _context.Clientes.AddAsync(cliente);
+                // _context.Entry(cliente).State = EntityState.Modified;
+                if (guardarOK)
+                {
+                    cliente.adcu_datecreated = DateTime.Now;
+                    await _context.Clientes.AddAsync(cliente); //guardar
+                }
+                else
+                {
+                    cliente.adcu_dateupdate = DateTime.Now;
+                    _context.Entry(cliente).State = EntityState.Modified; //modificar
+                }
                 await _context.SaveChangesAsync();
                 return true;
             }
