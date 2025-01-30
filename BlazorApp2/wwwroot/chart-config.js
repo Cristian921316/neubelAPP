@@ -1,7 +1,14 @@
 ﻿// Método para crear el gráfico de pastel
 function crearGraficoPastel(labels, data) {
     var ctx = document.getElementById('graficoPastel').getContext('2d');
-    new Chart(ctx, {
+    // 🛑 Si ya existe un gráfico, destruirlo antes de crear uno nuevo
+   
+    if (graficoPastel) {
+        graficoPastel.destroy();
+    }
+
+    // Crear el nuevo gráfico
+    var graficoPastel = new Chart(ctx, {
         type: 'pie', // Tipo de gráfico: pastel
         data: {
             labels: labels, // Etiquetas dinámicas

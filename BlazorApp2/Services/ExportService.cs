@@ -49,7 +49,7 @@
                 {
                     worksheet.Cell(i + 11, 1).Value = pagos[i].clienteName;
                     worksheet.Cell(i + 11, 2).Value = pagos[i].sector;
-                    worksheet.Cell(i + 11, 3).Value = pagos[i].anio;
+                    worksheet.Cell(i + 11, 3).Value = pagos[i].estado;
                     worksheet.Cell(i + 11, 4).Value = pagos[i].periodo;
                     worksheet.Cell(i + 11, 5).Value = pagos[i].comprobante;
                     worksheet.Cell(i + 11, 6).Value = pagos[i].valor;

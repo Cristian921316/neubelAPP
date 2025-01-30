@@ -21,12 +21,17 @@
         }
        
 
-        public async Task<List<ViewerPagoTrx>> getPagosViewer(int idNegocio)
+        public async Task<List<ViewerPagoTrx>> getPagosViewer(int idNegocio,string mesFiltro)
         {
-            return await _context.viewerPagos.FromSqlRaw("EXEC VIEWER_PAGOSTRX @idNegocio = {0}", idNegocio).ToListAsync();
+            return await _context.viewerPagos.FromSqlRaw("EXEC VIEWER_PAGOSTRX @idNegocio = {0},@mesFiltro = {1}", idNegocio,mesFiltro).ToListAsync();
         }
 
-        public async Task<bool> guardarPago(PagoTrx pago)
+		public List<ViewerPagoTrx> getPagosViewerVoid(int idNegocio, string mesFiltro)
+		{
+			return  _context.viewerPagos.FromSqlRaw("EXEC VIEWER_PAGOSTRX @idNegocio = {0},@mesFiltro = {1}", idNegocio, mesFiltro).ToList();
+		}
+
+		public async Task<bool> guardarPago(PagoTrx pago)
         {
             try
             {

@@ -11,6 +11,18 @@
 
 <h3>Listado pagos</h3>
 
+<!-- Se cargan los meses -->
+<div class="mb-3">
+    <label for="nombre" class="form-label">Periodo</label>
+    <select class="form-select" @bind=@mesSeleccionado>
+        @foreach (var mes in meses)
+        {
+            <option value="@mes">@mes</option>
+        }
+    </select>
+</div>
+
+
 <div class="container">
     <div class="row">
         <div class="col-md-4">
@@ -108,7 +120,7 @@
                                 <td>@pagoViewer.trxDate</td>
                                 <td>@pagoViewer.clienteName</td>
                                 <td>@pagoViewer.sector</td>
-                                <td>@pagoViewer.anio</td>
+                                <td>@pagoViewer.estado</td>
                                 <td>@pagoViewer.periodo</td>
                                 <td>@pagoViewer.comprobante</td>
                                 <td>@pagoViewer.valor</td>
@@ -139,6 +151,15 @@
     private List<ViewerPagoTrx> pagosFiltrado = new List<ViewerPagoTrx>();
     private Negocio negocio;
 
+
+    private string mesSeleccionado = "ENERO";
+
+    private List<string> meses = new List<string>
+    {
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    };
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -147,7 +168,7 @@
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
 
 
-        pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code);
+        pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code,mesSeleccionado);
         pagosFiltrado = pagosViewer;
 
         contarPagos();
