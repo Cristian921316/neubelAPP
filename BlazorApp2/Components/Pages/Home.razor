@@ -35,13 +35,18 @@
 <!-- Se cargan los meses -->
 <div class="mb-3">
 	<label for="nombre" class="form-label">Periodo</label>
-	<select class="form-select" @onchange="SeleccionarOpcion">
+	<select class="form-select"  @bind=@mesSeleccionado disabled >
 		@foreach (var mes in meses)
 		{
 			<option value="@mes">@mes</option>
 		}
 	</select>
+
+	<!-- Se coloca el ver detalles -->
+	<a href="/ReportePagos">Ver detalles</a>
+
 </div>
+
 
 
 <div class="container-fluid">
@@ -92,6 +97,40 @@
 				</div>
 
 
+				<div class="col-md-4">
+					<div class="card">
+						<h5 class="card-header">
+							Detalle Pagos
+						</h5>
+						<div class="card-body">
+							<p class="card-text">
+								<div>
+
+									<label for="pendiente" class="form-label mb-0 me-2">$ Recaudado</label>
+									<input type="@inputType" class="form-label mb-0 me-2" id="total" @bind="totalRecaudado" disabled style="width: 100px;">
+									<button class="btn btn-outline-secondary" type="button" id="toggleText" @onclick="AlternarVisibilidad">
+										Ver
+									</button>
+
+
+								</div>
+
+								<div>
+									<label for="pendiente" class="form-label mb-0 me-2"># Pendientes</label>
+									<input type="number" class="form-control" id="pendiente" @bind="pendiente" disabled style="width: 100px;">
+								</div>
+								<div>
+									<label for="pagado" class="form-label mb-0 me-2"># Pagados</label>
+									<input type="number" class="form-control" id="pagado" @bind="pagado" disabled style="width: 100px;">
+								</div>
+							</p>
+						</div>
+						<div class="card-footer">
+						</div>
+					</div>
+				</div>
+
+
 
 
 				<div class="col-md-4">
@@ -113,41 +152,8 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-4">
-					<div class="card">
-						<h5 class="card-header">
-							Detalle Pagos
-						</h5>
-						<div class="card-body">
-							<p class="card-text">
-								<div>
-
-									<label for="pendiente" class="form-label mb-0 me-2">$ Recaudado</label>
-									<input type="@inputType" class="form-label mb-0 me-2" id="total" @bind="totalRecaudado" disabled style="width: 100px;">
-									<button class="btn btn-outline-secondary" type="button" id="toggleText" @onclick="AlternarVisibilidad">
-										Ver
-									</button>
-									
-
-								</div>
-
-								<div>
-									<label for="pendiente" class="form-label mb-0 me-2"># Pendientes</label>
-									<input type="number" class="form-control" id="pendiente" @bind="pendiente" disabled style="width: 100px;">
-								</div>
-								<div>
-									<label for="pagado" class="form-label mb-0 me-2"># Pagados</label>
-									<input type="number" class="form-control" id="pagado" @bind="pagado" disabled style="width: 100px;">
-								</div>
-							</p>
-						</div>
-						<div class="card-footer">
-							
-						</div>
-					</div>
-				</div>
-
 				
+							
 
 			</div>
 		</div>
@@ -175,13 +181,41 @@
 	//renderizado de pastel.
 	private IJSObjectReference? chartInstance;
 
-	private string mesSeleccionado = "ENERO";
+	private string mesSeleccionado;
+
+	private ChangeEventArgs eventCambio = new ChangeEventArgs();
+
+
+	//se agregan datos al diccionario
+
+
 
 	private List<string> meses = new List<string>
 	{
 		"ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
 		"JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
 	};
+
+	protected override async Task OnInitializedAsync()
+	{
+		//se coloca el mes seleccionado del mes actual
+		int numeroMes = DateTime.Now.Month;
+
+		mesSeleccionado = meses[numeroMes].ToUpper();
+
+		eventCambio.Value = mesSeleccionado;
+
+		//Se recuperan datos del negocio
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		
+		negocio = await serviceNegocio.getByUser(user.Identity.Name);
+		rutaLogo = negocio.adbu_logo;
+
+		//SeleccionarOpcion(eventCambio);
+	}
+
+
 
 
 	private void AlternarVisibilidad()
@@ -250,7 +284,9 @@
 		//var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		try
 		{
+			
 
+			
 			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 			var user = authState.User;
 			//se recupera el negocio por el usuario logeado
@@ -260,7 +296,7 @@
 			pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code, mesSeleccionado);
 
 			//se obtiene la entidad para manejar los clientes pendientes
-			clientesPendientes = pagosViewer.Where(cp => cp.estado.Contains("PENDIENTE")).Take(10).ToList();
+			clientesPendientes = pagosViewer.Where(cp => cp.estado.Contains("PENDIENTE")).Take(20).ToList();
 
 
 			contarPagos();
@@ -284,36 +320,6 @@
 			Console.WriteLine(ex.Message);
 
 		}		
-
-	}
-
-
-
-	private async void SeleccionarOpcion(ChangeEventArgs e)
-	{
-		try
-		{
-
-			mesSeleccionado = e.Value.ToString();
-
-			pagosViewer =  servicePagos.getPagosViewerVoid(negocio.adbu_code, mesSeleccionado);
-
-			//se obtiene la entidad para manejar los clientes pendientes
-			clientesPendientes = pagosViewer.Where(cp => cp.estado.Contains("PENDIENTE")).Take(10).ToList();
-
-			contarPagos();
-
-			// Llama al método de JavaScript para crear el gráfico
-			await JSRuntime.InvokeVoidAsync("crearGraficoPastel", etiquetas, valores.ToArray());
-			StateHasChanged();
-
-		} catch (Exception ex)
-		{
-			Console.WriteLine(ex.Message);
-
-		}
-
-		
 
 	}
 
