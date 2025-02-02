@@ -114,6 +114,7 @@
     private string busquedaCliente = string.Empty;
     private Clientes? clienteSeleccionado;
     private bool mostrarSugerencias = false;
+    private string idUser;
 
     private Negocio negocio;
 
@@ -122,6 +123,7 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         //se recupera el negocio por el usuario logeado
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
 
@@ -181,8 +183,8 @@
 
     private async Task guardarPago()
     {
-        nuevoPago.adbu_codigo = 1;
-        nuevoPago.adus_code = "a7ae3c1c-aac3-4561-a7eb-9d093173d565";
+        nuevoPago.adbu_codigo = negocio.adbu_code;
+        nuevoPago.adus_code = idUser;
         nuevoPago.adcu_code = clienteSeleccionado.adcu_code;
         nuevoPago.adat_datecreated = DateTime.Now;
 

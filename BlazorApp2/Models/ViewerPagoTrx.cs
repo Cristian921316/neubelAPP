@@ -13,5 +13,7 @@ namespace BlazorApp2.Models
         public decimal? valor { get; set;}
         public string? estado { get; set; }
 
+        public string? observacion { get; set; }
+
     }
 }

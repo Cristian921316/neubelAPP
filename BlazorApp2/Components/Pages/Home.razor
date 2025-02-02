@@ -33,21 +33,23 @@
 </div>
 
 <!-- Se cargan los meses -->
-<div class="mb-3">
-	<label for="nombre" class="form-label">Periodo</label>
-	<select class="form-select"  @bind=@mesSeleccionado disabled >
-		@foreach (var mes in meses)
-		{
-			<option value="@mes">@mes</option>
-		}
-	</select>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-4">
+					<input type="text" class="form-control" id="pendiente" @bind-value=@mesSeleccionado disabled style="width: 300px;">
+				</div>
+				<div class="col-md-3">
+					<a href="/ReportePagos"> Ver detalles</a>
 
-	<!-- Se coloca el ver detalles -->
-	<a href="/ReportePagos">Ver detalles</a>
-
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-
+<br/>
 
 <div class="container-fluid">
 	<div class="row">
@@ -199,7 +201,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		//se coloca el mes seleccionado del mes actual
-		int numeroMes = DateTime.Now.Month;
+		int numeroMes = DateTime.Now.Month -1;
 
 		mesSeleccionado = meses[numeroMes].ToUpper();
 

@@ -99,15 +99,16 @@
    else if (pagosFiltrado.Count > 0)
     {
         <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
+            <table class="table table-striped table-bordered table-hover" style="font-size: 14px;">
                 <thead>
                     <tr>
-                        <th>FECHA PAGO</th>
+                        <th>FECHA</th>
                         <th>CLIENTE</th>
-                        <th>SECTOR</th>
-                        <th>AÑO</th>
+                        <th>SECTOR</th>                        
                         <th>PERIODO</th>
                         <th>COMPROBANTE</th>
+                        <th>OBSERVACION</th>
+                        <th>ESTADO</th>
                         <th>VALOR</th>
                     </tr>
                 </thead>
@@ -119,10 +120,11 @@
                             <tr>
                                 <td>@pagoViewer.trxDate</td>
                                 <td>@pagoViewer.clienteName</td>
-                                <td>@pagoViewer.sector</td>
-                                <td>@pagoViewer.estado</td>
+                                <td>@pagoViewer.sector</td>                                
                                 <td>@pagoViewer.periodo</td>
                                 <td>@pagoViewer.comprobante</td>
+                                <td>@pagoViewer.observacion</td>
+                                <td>@pagoViewer.estado</td>
                                 <td>@pagoViewer.valor</td>
                             </tr>
                         }
@@ -167,24 +169,34 @@
         //se recupera el negocio por el usuario logeado
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
 
+        buscarBoton();
 
-        pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code,mesSeleccionado);
-        pagosFiltrado = pagosViewer;
-
-        contarPagos();
     }
 
 
 
-    private void buscarBoton()
+    private async void buscarBoton()
     {
+        try
+        {
 
-        pagosFiltrado = pagosViewer.Where(pago => string.IsNullOrEmpty(searchTerm) ||
-        pago.clienteName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-        pago.sector.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-        pago.comprobante.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        contarPagos();
+            pagosViewer = servicePagos.getPagosViewerVoid(negocio.adbu_code, mesSeleccionado);
+            pagosFiltrado = pagosViewer;
+
+            pagosFiltrado = pagosViewer.Where(pago => string.IsNullOrEmpty(searchTerm) ||
+            pago.clienteName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            pago.sector.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            pago.comprobante.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            contarPagos();
+
+        } catch (Exception ex)
+        {
+            
+        
+        }
+
     }
 
 
@@ -195,7 +207,7 @@
         pendiente=0;
         foreach (var pagos in pagosFiltrado)
         {
-            if (!pagos.comprobante.Equals("PENDIENTE"))
+            if (!pagos.estado.Equals("PENDIENTE"))
             {
                 pagado += 1;
 
@@ -211,7 +223,7 @@
         if (selection)
         {
             selection = false;
-            pagosFiltrado = pagosViewer.Where(pago => pago.comprobante.Contains("PENDIENTE", StringComparison.OrdinalIgnoreCase) &&
+            pagosFiltrado = pagosViewer.Where(pago => pago.estado.Contains("PENDIENTE", StringComparison.OrdinalIgnoreCase) &&
             (string.IsNullOrEmpty(searchTerm) ||
             pago.clienteName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             pago.sector.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
@@ -222,7 +234,7 @@
         else if (!selection)
         {
             selection = true;
-            pagosFiltrado = pagosViewer.Where(pago => !pago.comprobante.Equals("PENDIENTE") &&
+            pagosFiltrado = pagosViewer.Where(pago => !pago.estado.Equals("PENDIENTE") &&
             (string.IsNullOrEmpty(searchTerm) ||
             pago.clienteName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             pago.sector.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
