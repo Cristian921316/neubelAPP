@@ -12,7 +12,7 @@
 @inject PagoServices pagoService;
 @attribute [Authorize]
 
-<h3>RegistrarPago</h3>
+<h3>Registrar Pago</h3>
 
 @if (mostrarMensaje)
 {
@@ -25,76 +25,105 @@
 @if (mesageError)
 {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        Comprobante ya registrado!
+        @strMensajeMostrar
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
+<div class="container mt-4">
+    <!-- Navegación de las pestañas -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="opcion1-tab" data-bs-toggle="tab" data-bs-target="#opcion1" type="button" role="tab" aria-controls="opcion1" aria-selected="true">
+                Individual
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="opcion2-tab" data-bs-toggle="tab" data-bs-target="#opcion2" type="button" role="tab" aria-controls="opcion2" aria-selected="false">
+                Multiple
+            </button>
+        </li>
+    </ul>
 
-<div class="container mt-5">
-    <div class="border p-4 rounded">
+    <!-- Contenido de las pestañas -->
+    <div class="tab-content mt-3" id="myTabContent">
+        <div class="tab-pane fade show active" id="opcion1" role="tabpanel" aria-labelledby="opcion1-tab">
 
-        <EditForm id="registroForm" Model="@nuevoPago" OnValidSubmit="guardarPago">
+            <div class="container mt-5">
+                <div class="border p-4 rounded">
 
-            
+                    <EditForm id="registroForm" Model="@nuevoPago" OnValidSubmit="guardarPago">
 
-            <div class="mb-3">
-                <label for="cliente" class="form-label">Buscar Cliente</label>
-                <InputText id="cliente" class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
-                <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
-                    @foreach (var cliente in clientesFiltrados)
-                    {
-                        <li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
-                            @cliente.adcu_name
-                        </li>
-                    }
-                </ul>
+
+
+                        <div class="mb-3">
+                            <label for="cliente" class="form-label">Buscar Cliente</label>
+                            <InputText id="cliente" class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
+                            <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
+                                @foreach (var cliente in clientesFiltrados)
+                                {
+                                    <li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
+                                        @cliente.adcu_name
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Periodo</label>
+                            <select class="form-select" @bind=@mesSeleccionado>
+                                @foreach (var mes in meses)
+                                {
+                                    <option value="@mes">@mes</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Tipo Pago</label>
+                            <select class="form-select" @bind=@tipoPagoSelecc>
+                                @foreach (var tipo in tipoPago)
+                                {
+                                    <option value="@tipo">@tipo</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Campo Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Comprobante</label>
+                            <input type="text" class="form-control" @bind="nuevoPago.adat_comprobante" id="comprobante" name="comprobante" placeholder="Ingresa comprobante" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Valor</label>
+                            <input type="number" class="form-control" @bind="nuevoPago.adat_valor" id="valor" name="valor" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Observacion</label>
+                            <input type="text" class="form-control" @bind="nuevoPago.adat_descripcion" id="descripcion" name="descripcion" required>
+                        </div>
+
+                        <!-- Botón Guardar -->
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </EditForm>
+                </div>
             </div>
 
+
+        </div>
+        <div class="tab-pane fade" id="opcion2" role="tabpanel" aria-labelledby="opcion2-tab">
            
 
-            <!-- Campo Nombre -->
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Periodo</label>
-                <select class="form-select" @bind=@mesSeleccionado>
-                    @foreach (var mes in meses)
-                    {
-                        <option value="@mes">@mes</option>
-                    }
-                </select>
-            </div>
 
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Tipo Pago</label>
-                <select class="form-select" @bind=@tipoPagoSelecc>
-                    @foreach (var tipo in tipoPago)
-                    {
-                        <option value="@tipo">@tipo</option>
-                    }
-                </select>
-            </div>
-
-            <!-- Campo Email -->
-            <div class="mb-3">
-                <label for="email" class="form-label">Comprobante</label>
-                <input type="text" class="form-control" @bind="nuevoPago.adat_comprobante" id="comprobante" name="comprobante" placeholder="Ingresa comprobante" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="email" class="form-label">Valor</label>
-                <input type="number" class="form-control" @bind="nuevoPago.adat_valor" id="valor" name="valor" step="0.01" min="0" placeholder="0.00" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Observacion</label>
-                <input type="text" class="form-control" @bind="nuevoPago.adat_descripcion" id="descripcion" name="descripcion"  required>
-            </div>
-
-            <!-- Botón Guardar -->
-            <button type="submit" class="btn btn-primary">Guardar</button>
-        </EditForm>
+        </div>
     </div>
 </div>
+
 
 
 
@@ -103,6 +132,7 @@
     private PagoTrx nuevoPago = new PagoTrx();
     private List<PagoTrx> listaPagos = new List<PagoTrx>();
     private PagoTrx pagoFind = null;
+    private PagoTrx pagoFindClientePeriodo = null;
     private bool mostrarMensaje = false;
     private bool mesageError = false;
 
@@ -114,7 +144,7 @@
     private string busquedaCliente = string.Empty;
     private Clientes? clienteSeleccionado;
     private bool mostrarSugerencias = false;
-    private string idUser;
+    private string idUser,strMensajeMostrar="";
 
     private Negocio negocio;
 
@@ -127,7 +157,7 @@
         //se recupera el negocio por el usuario logeado
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
 
-        clientes = await ClienteService.GetClientesAsync(negocio.adbu_code);
+        clientes = await ClienteService.GetClientesActivosAsync(negocio.adbu_code);
 
         //listaPagos = await pagoService.getPagosAll();
         nuevoPago.adat_periodopago = mesSeleccionado;
@@ -176,9 +206,9 @@
 
     private string mesSeleccionado = "ENERO";
     private string tipoPagoSelecc = "TRANSFERENCIA";
-    
+
     //se coloca el por defecto al objeto
-    
+
 
 
     private async Task guardarPago()
@@ -195,33 +225,53 @@
         listaPagos = await pagoService.getPagosAll();
 
         pagoFind = listaPagos
-            .Where(c => c.adat_comprobante.Contains(nuevoPago.adat_comprobante, StringComparison.OrdinalIgnoreCase))
+            .Where(c => c.adat_comprobante.Contains(nuevoPago.adat_comprobante, StringComparison.OrdinalIgnoreCase) && c.adbu_codigo == nuevoPago.adbu_codigo)
             .FirstOrDefault();
 
-        if (pagoFind == null)
+        //se valida que no se ingrese el mismo pago por cliente en el periodo
+        pagoFindClientePeriodo = listaPagos
+            .Where(c => c.adcu_code == clienteSeleccionado.adcu_code && c.adat_periodopago.Contains(nuevoPago.adat_periodopago) && c.adbu_codigo == nuevoPago.adbu_codigo)
+            .FirstOrDefault();
+
+        if (pagoFindClientePeriodo != null)
         {
-            await pagoService.guardarPago(nuevoPago);
-            mostrarMensaje = true;
-            //Navigation.NavigateTo("/clientes");
-            StateHasChanged();
-            nuevoPago = new PagoTrx();
-            busquedaCliente = "";
-
-
-            await Task.Delay(2000);
-            mostrarMensaje = false;
-            StateHasChanged();
-
-        }
-        else
-        {
+            strMensajeMostrar = "Error: El cliente ya tiene un pago registrado,para este periodo " + pagoFindClientePeriodo.adat_periodopago;
             mesageError = true;
             StateHasChanged();
             await Task.Delay(2000);
             mesageError = false;
             StateHasChanged();
+
+        }
+        else //se envia a guardar el pago
+        {
+
+            if (pagoFind == null)
+            {
+                await pagoService.guardarPago(nuevoPago);
+                mostrarMensaje = true;
+                //Navigation.NavigateTo("/clientes");
+                StateHasChanged();
+                nuevoPago = new PagoTrx();
+                busquedaCliente = "";
+
+
+                await Task.Delay(2000);
+                mostrarMensaje = false;
+                StateHasChanged();
+
+            }
+            else
+            {
+                strMensajeMostrar = "Error: Comprobante ya registrado!";
+                mesageError = true;
+                StateHasChanged();
+                await Task.Delay(2000);
+                mesageError = false;
+                StateHasChanged();
         }
 
+        }
 
         
     }

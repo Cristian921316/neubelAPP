@@ -19,6 +19,12 @@
 
 		}
 
+        public async Task<List<Clientes>> GetClientesActivosAsync(int idNegocio)
+        {
+            return await _context.Clientes.Where(c => c.adbu_code == idNegocio && c.adcu_estado).ToListAsync();
+
+        }
+
         public async Task<Clientes?> getById(int id)
         {
             try
