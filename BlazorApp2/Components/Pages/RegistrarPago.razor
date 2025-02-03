@@ -12,6 +12,9 @@
 @inject PagoServices pagoService;
 @attribute [Authorize]
 
+
+
+
 <h3>Registrar Pago</h3>
 
 @if (mostrarMensaje)
@@ -38,11 +41,7 @@
                 Individual
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="opcion2-tab" data-bs-toggle="tab" data-bs-target="#opcion2" type="button" role="tab" aria-controls="opcion2" aria-selected="false">
-                Multiple
-            </button>
-        </li>
+       
     </ul>
 
     <!-- Contenido de las pestañas -->
@@ -62,8 +61,10 @@
                             <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
                                 @foreach (var cliente in clientesFiltrados)
                                 {
+                                    <ComponentModel @key="cliente.adcu_name" Cliente="cliente" />
+
                                     <li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
-                                        @cliente.adcu_name
+                                       @cliente.adcu_name
                                     </li>
                                 }
                             </ul>
@@ -116,11 +117,7 @@
 
 
         </div>
-        <div class="tab-pane fade" id="opcion2" role="tabpanel" aria-labelledby="opcion2-tab">
-           
-
-
-        </div>
+      
     </div>
 </div>
 
@@ -148,20 +145,36 @@
 
     private Negocio negocio;
 
+    private bool _cargado = false;
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+        if (!_cargado)
+        {
+            _cargado = true; 
 
-        clientes = await ClienteService.GetClientesActivosAsync(negocio.adbu_code);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            //se recupera el negocio por el usuario logeado
 
-        //listaPagos = await pagoService.getPagosAll();
-        nuevoPago.adat_periodopago = mesSeleccionado;
-        nuevoPago.adat_tipopago = tipoPagoSelecc;
+
+            negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
+
+            if (negocio != null)
+            {
+                clientes = await ClienteService.GetClientesActivosAsync(negocio.adbu_code);
+            }
+
+
+
+            //listaPagos = await pagoService.getPagosAll();
+            nuevoPago.adat_periodopago = mesSeleccionado;
+            nuevoPago.adat_tipopago = tipoPagoSelecc;
+            
+        }
+
+       
     }
 
 

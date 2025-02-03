@@ -149,6 +149,7 @@
     private List<ViewerPagoTrx> pagosFiltrado = new List<ViewerPagoTrx>();
     private Negocio negocio = new Negocio();
     private string rutaLogo="";
+    private int idNegocio=0;
 
 
     private string mesSeleccionado = "ENERO";
@@ -161,30 +162,33 @@
 
     protected override async Task OnInitializedAsync()
     {
-        
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
 
-            //se recupera el negocio por el usuario logeado
-            negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
-            rutaLogo = negocio.adbu_logo;
 
-            
-
-            buscarBoton();
-
+        await buscarBoton();
 
 
     }
 
 
 
-    private void buscarBoton()
+    private async Task<int> buscarBoton()
     {
         try
         {                  
 
-            pagosViewer = servicePagos.getPagosViewerVoid(negocio.adbu_code, mesSeleccionado);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            //se recupera el negocio por el usuario logeado
+            negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
+
+            if (negocio != null)
+            {
+                idNegocio = negocio.adbu_code;
+                rutaLogo = negocio.adbu_logo;
+            }
+
+            pagosViewer = servicePagos.getPagosViewerVoid(idNegocio, mesSeleccionado);
             pagosFiltrado = pagosViewer;
 
             pagosFiltrado = pagosViewer.Where(pago => string.IsNullOrEmpty(searchTerm) ||
@@ -194,10 +198,12 @@
 
             contarPagos();
 
+            return 1;
+
         } catch (Exception ex)
         {
-            
-        
+            return 0;
+
         }
 
     }
