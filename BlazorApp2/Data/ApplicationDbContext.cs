@@ -11,7 +11,9 @@ namespace BlazorApp2.Data
 
         public DbSet<ViewerPagoTrx> viewerPagos { get; set; }
 
-		public DbSet<Negocio> Negocios { get; set; }
+        public DbSet<PagosPendientes> pagosPendientes { get; set; }
+
+        public DbSet<Negocio> Negocios { get; set; }
 
 
 	}

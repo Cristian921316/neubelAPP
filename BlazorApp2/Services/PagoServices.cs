@@ -31,7 +31,12 @@
 			return  _context.viewerPagos.FromSqlRaw("EXEC VIEWER_PAGOSTRX @idNegocio = {0},@mesFiltro = {1}", idNegocio, mesFiltro).ToList();
 		}
 
-		public async Task<bool> guardarPago(PagoTrx pago)
+        public List<PagosPendientes> getPagosPendientesViewerVoid(int idNegocio)
+        {
+            return _context.pagosPendientes.FromSqlRaw("EXEC VIEWER_CLIENTES_PENDIENTES @idNegocio = {0}", idNegocio).ToList();
+        }
+
+        public async Task<bool> guardarPago(PagoTrx pago)
         {
             try
             {

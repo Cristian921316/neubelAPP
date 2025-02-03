@@ -58,13 +58,18 @@
 
 				<div class="col-md-4">
 					<div class="card">
-						<h5 class="card-header">
-							Clientes Pendientes
-						</h5>
+						
+							@if (pagosPendientes != null && pagosPendientes.Count > 0)
+							{
+							<h5 class="card-header">
+								Clientes Pendientes, Total : @totalPendientes
+							</h5>								
+							}
+						
 
 						<div class="card-body">
 
-							@if (clientesPendientes != null && clientesPendientes.Count > 0)
+							@if (pagosPendientes != null && pagosPendientes.Count > 0)
 							{
 															
 
@@ -75,15 +80,17 @@
 
 												<th>NOMBRE</th>
 												<th>SECTOR</th>
+												<th>ENERO</th>
+
 											</tr>
 										</thead>
 										<tbody>
-											@foreach (var cliente in clientesPendientes)
+											@foreach (var cliente in pagosPendientes)
 											{
 												<tr>
-													<td>@cliente.clienteName</td>
+													<td>@cliente.cliente</td>
 													<td>@cliente.sector</td>
-
+													<td>@cliente.enero</td>
 												</tr>
 											}
 										</tbody>
@@ -183,6 +190,7 @@
 	private List<decimal?> valores = new List<decimal?>();
 	private int[] valoresArreglo = { 45, 55 };
 	private List<ViewerPagoTrx> pagosViewer,clientesPendientes;
+	private List<PagosPendientes> pagosPendientes;
 	private Negocio negocio;
 	private decimal? total, pagado, pendiente;
 	private decimal? porcenPagado, porcenPendiente,totalRecaudado;
@@ -201,7 +209,7 @@
 	private int paginaActual = 1;
 	private int registrosPorPagina = 10;
 	private int totalPaginas;
-
+	private int totalPendientes = 0;
 
 
 	private List<string> meses = new List<string>
@@ -210,7 +218,7 @@
 		"JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
 	};
 
-	
+
 
 	private void AlternarVisibilidad()
 	{
@@ -294,6 +302,7 @@
 			//clientesPendientes = pagosViewer.Where(cp => cp.estado.Contains("PENDIENTE")).Take(20).ToList();
 
 			pagosViewer = await servicePagos.getPagosViewer(negocio.adbu_code, mesSeleccionado);
+			pagosPendientes = servicePagos.getPagosPendientesViewerVoid(negocio.adbu_code);
 
 			CargarDatos();
 			contarPagos();
@@ -322,13 +331,14 @@
 
 	private void  CargarDatos()
 	{
-		clientesPendientes = pagosViewer.Where(cp => cp.estado.Contains("PENDIENTE")).ToList();
 
-		var totalRegistros = clientesPendientes.Count;
+
+		var totalRegistros = pagosPendientes.Count;
+		totalPendientes = totalRegistros;
 		totalPaginas = (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
 
-		clientesPendientes = clientesPendientes
-			.OrderBy(c => c.trxDate)
+		pagosPendientes = pagosPendientes
+			.OrderBy(c => c.cliente)
 			.Skip((paginaActual - 1) * registrosPorPagina)
 			.Take(registrosPorPagina)
 			.ToList();
