@@ -152,6 +152,7 @@
     private static string searchTerm;
     private List<ViewerPagoTrx> pagosFiltrado = new List<ViewerPagoTrx>();
     private Negocio negocio;
+    private string rutaLogo="";
 
 
     private string mesSeleccionado = "ENERO";
@@ -164,12 +165,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+        try
+        {
 
-        buscarBoton();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            //se recupera el negocio por el usuario logeado
+            negocio = await serviceNegocio.getByUser(user.Identity.Name);
+            rutaLogo = negocio.adbu_logo;
+
+            buscarBoton();
+        } catch (Exception ex)
+        {
+            
+        
+        }
+
 
     }
 
@@ -257,7 +268,7 @@
 
     private async Task DescargarExcel()
     {
-        await ExportService.ExportarAExcel(pagosFiltrado);
+        await ExportService.ExportarAExcel(pagosFiltrado,rutaLogo);
     }
 
 

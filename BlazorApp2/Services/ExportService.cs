@@ -7,9 +7,13 @@
     using System.Collections.Generic;
     using BlazorApp2.Models;
     using BlazorApp2.Components.Pages;
+	using DocumentFormat.OpenXml.Spreadsheet;	
+	public class ExportService
+	{
+		private Negocio negocio;
+		
 
-    public class ExportService
-    {
+
         private readonly IJSRuntime _jsRuntime;
 
         public ExportService(IJSRuntime jsRuntime)
@@ -17,16 +21,18 @@
             _jsRuntime = jsRuntime;
         }
 
-        public async Task ExportarAExcel(List<ViewerPagoTrx> pagos)
+        public async Task ExportarAExcel(List<ViewerPagoTrx> pagos, string rutaLogo)
         {
             try
             {
 
-                using var workbook = new XLWorkbook();
+				
+
+				using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("ListadoPagos");
 
                 // Agregar una imagen (reemplaza la ruta por tu imagen)
-                var imagenPath = "wwwroot/images/LgLogo.png"; // Ruta de la imagen
+                var imagenPath = "wwwroot/"+rutaLogo; // Ruta de la imagen
                 worksheet.AddPicture(imagenPath)
                                         .MoveTo(worksheet.Cell("A1")) // Posicionar la imagen en la celda A1
                                         .Scale(0.2); // Escalar la imagen al 50% de su tamaño orig
@@ -34,30 +40,32 @@
 
 
                 worksheet.Cell(10, 1).Value = "CLIENTE";
-                worksheet.Cell(10, 2).Value = "SECTOR";
-                worksheet.Cell(10, 3).Value = "ANIO";
-                worksheet.Cell(10, 4).Value = "PERIODO";
-                worksheet.Cell(10, 5).Value = "COMPROBANTE";
-                worksheet.Cell(10, 6).Value = "VALOR";
+                worksheet.Cell(10, 2).Value = "SECTOR";                
+                worksheet.Cell(10, 3).Value = "PERIODO";
+				worksheet.Cell(10, 4).Value = "OBSERVACION";
+				worksheet.Cell(10, 5).Value = "COMPROBANTE";
+				worksheet.Cell(10, 6).Value = "ESTADO";
+				worksheet.Cell(10, 7).Value = "VALOR";
 
                 //negrilla a los titulos
-                worksheet.Range("A10:F10").Style.Font.SetBold(true);
-                worksheet.Range("A10:F10").Style.Fill.BackgroundColor = XLColor.LightBlue;
+                worksheet.Range("A10:G10").Style.Font.SetBold(true);
+                worksheet.Range("A10:G10").Style.Fill.BackgroundColor = XLColor.LightBlue;
 
                 // Agregar datos
                 for (int i = 0; i < pagos.Count; i++)
                 {
                     worksheet.Cell(i + 11, 1).Value = pagos[i].clienteName;
                     worksheet.Cell(i + 11, 2).Value = pagos[i].sector;
-                    worksheet.Cell(i + 11, 3).Value = pagos[i].estado;
-                    worksheet.Cell(i + 11, 4).Value = pagos[i].periodo;
+                    worksheet.Cell(i + 11, 3).Value = pagos[i].periodo;
+                    worksheet.Cell(i + 11, 4).Value = pagos[i].observacion;
                     worksheet.Cell(i + 11, 5).Value = pagos[i].comprobante;
-                    worksheet.Cell(i + 11, 6).Value = pagos[i].valor;
+					worksheet.Cell(i + 11, 6).Value = pagos[i].estado;
+					worksheet.Cell(i + 11, 7).Value = pagos[i].valor;
                 }
 
                 //se agrega bodes
-                worksheet.Range("A10:F"+ (pagos.Count+11).ToString()).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                worksheet.Range("A10:F" + (pagos.Count + 11).ToString()).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                worksheet.Range("A10:G"+ (pagos.Count+11).ToString()).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                worksheet.Range("A10:G" + (pagos.Count + 11).ToString()).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                 // Guardar el archivo en un stream
                 using var stream = new MemoryStream();
