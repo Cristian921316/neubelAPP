@@ -53,8 +53,24 @@ namespace BlazorApp2.Services
 		}
 
 
+        public Negocio getByUserVoid(string user)
+        {
+
+            try
+            {
+                return _context.Negocios.FirstOrDefault(n => n.adbu_email == user);
+
+
+            }
+            catch (Exception ex)
+            {
+
+                return null;
+            }
+
+        }
 
 
 
-	}
+    }
 }

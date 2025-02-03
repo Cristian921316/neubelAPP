@@ -210,39 +210,7 @@
 		"JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
 	};
 
-	protected override async Task OnInitializedAsync()
-	{
-		try
-		{
-
-
-			//se coloca el mes seleccionado del mes actual
-			int numeroMes = DateTime.Now.Month - 1;
-
-			mesSeleccionado = meses[numeroMes].ToUpper();
-
-			eventCambio.Value = mesSeleccionado;
-
-			//Se recuperan datos del negocio
-			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-			var user = authState.User;
-
-			negocio = await serviceNegocio.getByUser(user.Identity.Name);
-			rutaLogo = negocio.adbu_logo;
-
-
-
-		} catch (Exception ex)
-		{
-
-
-		}
-
-
-	}
-
-
-
+	
 
 	private void AlternarVisibilidad()
 	{
@@ -310,7 +278,10 @@
 		//var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		try
 		{
+			//se coloca el mes seleccionado del mes actual
+			int numeroMes = DateTime.Now.Month - 1;
 
+			mesSeleccionado = meses[numeroMes].ToUpper();
 
 
 			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -335,7 +306,7 @@
 			}
 			else
 			{
-				//StateHasChanged();
+				StateHasChanged();
 
 			}
 
