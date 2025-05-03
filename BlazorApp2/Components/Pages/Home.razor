@@ -56,7 +56,7 @@
 		<div class="col-md-12">
 			<div class="row">
 
-				<div class="col-md-4">
+				<div class="col-md-12">
 					<div class="card">
 						
 							@if (pagosPendientes != null && pagosPendientes.Count > 0)
@@ -81,6 +81,8 @@
 												<th>NOMBRE</th>
 												<th>SECTOR</th>
 												<th>ENERO</th>
+												<th>FEBRERO</th>
+												<th>MARZO</th>
 
 											</tr>
 										</thead>
@@ -91,6 +93,8 @@
 													<td>@cliente.cliente</td>
 													<td>@cliente.sector</td>
 													<td>@cliente.enero</td>
+													<td>@cliente.febrero</td>
+													<td>@cliente.marzo</td>
 												</tr>
 											}
 										</tbody>

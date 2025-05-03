@@ -8,7 +8,11 @@ namespace BlazorApp2.Models
         public string cliente { get; set; }
         public string sector { get; set; }
         public string enero { get; set; }
+		public string febrero { get; set; }
+
+		public string marzo { get; set; }
 
 
-    }
+
+	}
 }

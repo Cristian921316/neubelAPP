@@ -1,0 +1,97 @@
+﻿@page "/ExperienciaCliente"
+
+<h3>Resultados Experiencia al Cliente</h3>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla con Bootstrap</title>
+    <!-- Enlace a Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Enlace a los íconos de FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Estilo personalizado para las cabeceras de la tabla */
+        th {
+            background-color: #4CAF50; /* Color verde */
+            color: white;
+        }
+        /* Estilo para las filas de la tabla */
+        td {
+            background-color: #f9f9f9;
+        }
+        td i {
+            color: #4CAF50; /* Icono verde */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Farmacia</th>
+                    <th>Empleado</th>
+                    <th>Fecha</th>
+                    <th>Evaluación Cuantitativa</th>
+                    <th>Evaluación Cualitativa</th>
+                    <th>Revisar Video</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Farmacia La Salud</td>
+                    <td>Juan Pérez</td>
+                    <td>18/02/2025</td>
+                    <td>8/10</td>
+                    <td>Excelente atención al cliente</td>
+                    <td><i class="fas fa-play-circle"></i></td>
+                </tr>
+                <tr>
+                    <td>Farmacia El Bienestar</td>
+                    <td>Ana Gómez</td>
+                    <td>18/02/2025</td>
+                    <td>7/10</td>
+                    <td>Buen servicio, aunque lento</td>
+                    <td><i class="fas fa-play-circle"></i></td>
+                </tr>
+                <tr>
+                    <td>Farmacia San José</td>
+                    <td>Carlos López</td>
+                    <td>18/02/2025</td>
+                    <td>6/10</td>
+                    <td>Regular, falta de productos</td>
+                    <td><i class="fas fa-play-circle"></i></td>
+                </tr>
+                <tr>
+                    <td>Farmacia Salud Total</td>
+                    <td>María Rodríguez</td>
+                    <td>18/02/2025</td>
+                    <td>9/10</td>
+                    <td>Excelente atención, productos disponibles</td>
+                    <td><i class="fas fa-play-circle"></i></td>
+                </tr>
+                <tr>
+                    <td>Farmacia El Buen Precio</td>
+                    <td>José Martínez</td>
+                    <td>18/02/2025</td>
+                    <td>7/10</td>
+                    <td>Buena calidad, pero poco personal</td>
+                    <td><i class="fas fa-play-circle"></i></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Scripts de Bootstrap y FontAwesome -->
+    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+@code {
+
+}
