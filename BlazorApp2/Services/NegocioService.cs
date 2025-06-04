@@ -40,7 +40,24 @@ namespace BlazorApp2.Services
 
 			try
 			{
-				return _context.Negocios.FirstOrDefaultAsync(n => n.adbu_email == user);
+                return _context.Negocios.FirstOrDefaultAsync(n => n.adbu_email == user);			 
+
+
+            }
+			catch (Exception ex)
+			{
+
+				return null;
+			}
+
+		}
+
+		public Task<Negocio> getByIdNegocio(int id)
+		{
+
+			try
+			{
+				return _context.Negocios.FirstOrDefaultAsync(n => n.adbu_code == id);
 
 
 			}
@@ -53,7 +70,7 @@ namespace BlazorApp2.Services
 		}
 
 
-        public Negocio getByUserVoid(string user)
+		public Negocio getByUserVoid(string user)
         {
 
             try

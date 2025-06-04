@@ -16,6 +16,8 @@ builder.Services.AddScoped<ServiceClientes>();
 builder.Services.AddScoped<PagoServices>();
 builder.Services.AddScoped<NegocioService>();
 builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<ServiceUserNegocio>();
+builder.Services.AddScoped<ProductoServices>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();

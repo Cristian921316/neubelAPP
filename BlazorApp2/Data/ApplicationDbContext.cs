@@ -15,6 +15,10 @@ namespace BlazorApp2.Data
 
         public DbSet<Negocio> Negocios { get; set; }
 
+        public DbSet<UserBussines> UserBussines { get; set; }
 
-	}
+        public DbSet<Productos> Productos { get; set; }
+
+
+    }
 }
