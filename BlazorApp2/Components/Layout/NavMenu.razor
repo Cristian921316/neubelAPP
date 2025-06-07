@@ -28,30 +28,30 @@
                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
                     </NavLink>
                 </div>
-               
+
 
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/productos">
-                        <span class="nav-menu" aria-hidden="true"></span> Productos
+                    <NavLink class="nav-link" href="/productos" >
+                        <i class="fa-solid fa-list"></i>  Productos
                     </NavLink>
                 </div>
                                 
 
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="#">
-                        <span class="nav-menu" aria-hidden="true"></span> Ingresos
+                    <NavLink class="nav-link" href="/registroCompras" >
+                        <i class="fa-solid fa-cart-shopping"></i> Compras
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="registroCompras">
-                        <span class="nav-menu" aria-hidden="true"></span> Registro Cotizaciones
+                    <NavLink class="nav-link" href="#" >
+                        <i class="fa-solid fa-file-invoice"></i> Salidas
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="#">
-                        <span class="nav-menu" aria-hidden="true"></span> Salida
+                    <NavLink class="nav-link" href="#" >
+                        <i class="fa-solid fa-dollar-sign"></i> Cotizacion Costos
                     </NavLink>
                 </div>
                                
@@ -99,6 +99,8 @@
 
 @code {
     private string? currentUrl;
+
+  
 
     protected override void OnInitialized()
     {

@@ -21,7 +21,7 @@ namespace BlazorApp2.Models
 
         [Key]
         [Column("ADPRO_CODIGO")]
-        public Guid adusb_codigo { get; set; }
+        public Guid adpro_codigo { get; set; }
 
         [Column("ADBU_CODE")]
         public int adbu_code { get; set; }
@@ -54,8 +54,11 @@ namespace BlazorApp2.Models
         [Column("ADPRO_DATEUPDATE")]
         public DateTime? adpro_dateupdate { get; set; }
 
+        [Column("ADPRO_ESTADO")]
+        public bool adpro_estado { get; set; }
 
 
 
-    }
+
+        }
 }

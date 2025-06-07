@@ -33,5 +33,64 @@ namespace BlazorApp2.Services
 
         }
 
+        public async Task<Productos?> getById(Guid id)
+        {
+            try
+            {
+                return await _context.Productos.FirstOrDefaultAsync(p => p.adpro_codigo == id);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores (puedes loguear el error si lo necesitas)
+                Console.WriteLine($"Error al buscar producto: {ex.Message}");
+                return null;
+            }
+
+        }
+
+        public async Task<bool> Guardar(Productos producto, bool guardarOK)
+        {
+            try
+            {
+                // _context.Entry(cliente).State = EntityState.Modified;
+                if (guardarOK)
+                {
+                    producto.adpro_datecreated = DateTime.Now;
+                    await _context.Productos.AddAsync(producto); //guardar
+                }
+                else
+                {
+                    producto.adpro_dateupdate = DateTime.Now;
+                    _context.Entry(producto).State = EntityState.Modified; //modificar
+                }
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores (puedes loguear el error si lo necesitas)
+                Console.WriteLine($"Error al guardar el producto: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task Eliminar(Guid productoId)
+        {
+            // Busca el producto por su ID
+            var productoAEliminar = await _context.Productos.FindAsync(productoId); // Asumo que tu DbSet se llama Productos
+
+            if (productoAEliminar != null)
+            {
+                _context.Productos.Remove(productoAEliminar); // Marca el producto para eliminación
+                await _context.SaveChangesAsync(); // Guarda los cambios en la base de datos
+            }
+            else
+            {
+                // Opcional: Lanza una excepción o registra un mensaje si el producto no se encontró
+                throw new KeyNotFoundException($"Producto con ID {productoId} no encontrado.");
+            }
+        }
+
+
     }
 }

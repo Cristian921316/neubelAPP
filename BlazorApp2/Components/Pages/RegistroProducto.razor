@@ -1,0 +1,146 @@
+﻿@page "/RegistrarProductos/{ProductoId:guid?}"
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@rendermode InteractiveServer
+@inject ServiceClientes ClienteService
+@inject NegocioService serviceNegocio
+@inject ProductoServices productoServices
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+
+
+<h2>@(ProductoId.HasValue ? "Editar Producto" : "Registrar Producto")</h2>
+
+@if (mostrarMensaje)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Producto registrado con éxito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-5">
+    <div class="border p-4 rounded">
+
+        <EditForm id="registroForm" Model="@productosSave" OnValidSubmit="GuardarProducto">
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Cod-Sofadcon</label>
+                <input type="text" class="form-control" @bind="productosSave.adpro_codigoalterno1" id="codSofadcon">
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Descripcion</label>
+                <input type="text" class="form-control" @bind="productosSave.adpro_descripcion" id="descripcion">
+            </div>
+
+            <div class="mb-3">
+                <label for="cantidad" class="form-label">Cantidad</label>
+                <input type="number" class="form-control" @bind="productosSave.adpro_cantidad" id="cantidad">
+            </div>
+
+            <div class="mb-3">
+                <label for="valor" class="form-label">Valor</label>
+                <input type="number" class="form-control" @bind="productosSave.adpro_valor" id="valor">
+            </div>
+
+            <div class="mb-3">
+                <label for="observacion" class="form-label">Observacion</label>
+                <input type="text" class="form-control" @bind="productosSave.adpro_observacion" id="observacion">
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind="productosSave.adpro_estado">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Estado</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Registro</button>
+
+        </EditForm>
+
+    </div>
+</div>
+
+
+
+@code {
+
+    [Parameter]
+    public Guid? ProductoId { get; set; }
+
+    // Aquí debes declarar la variable
+    private List<Productos> productos;
+    private string searchTerm = string.Empty;
+    private Negocio negocio;
+
+    private bool mostrarMensaje = false, guardarOK = true;
+
+    //objeto productos a guardar
+    private Productos productosSave = new Productos();
+
+    private string idUser;
+
+    // Este método se ejecuta cuando el componente se inicializa
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        //se recupera el negocio por el usuario logeado
+        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+
+
+       
+
+        if (ProductoId.HasValue)
+        {
+            productosSave = await productoServices.getById(ProductoId.Value);
+            guardarOK = false;//es modificar
+
+            if (productosSave == null)
+            {
+                // Navigation.NavigateTo("/clientes");
+                NavigationManager.NavigateTo("/clientes");
+            }
+        }
+
+    }
+
+    private async Task GuardarProducto()
+    {
+        try
+        {
+            productosSave.adbu_code = negocio.adbu_code;
+            productosSave.adpro_userupdate = idUser;
+
+
+            //se marca como modificado
+
+
+            await productoServices.Guardar(productosSave, guardarOK);
+            mostrarMensaje = true;
+            //Navigation.NavigateTo("/clientes");
+            StateHasChanged();
+            productosSave = new Productos();
+            //si se crea un nuevo cliente se envia la bandera como creacion
+            guardarOK = true;
+            // Desvanecer el mensaje después de 3 segundos
+            await Task.Delay(2000);
+            mostrarMensaje = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Manejo de errores
+            Console.WriteLine($"Error al guardar el producto: {ex.Message}");
+        }
+    }
+
+}
