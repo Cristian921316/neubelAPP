@@ -57,8 +57,14 @@ namespace BlazorApp2.Models
         [Column("ADPRO_ESTADO")]
         public bool adpro_estado { get; set; }
 
+        [Column("ADPRO_IVA")]
+        public bool adpro_iva { get; set; }
+
+        [Column("ADPRO_ICE")]
+        public bool adpro_ice { get; set; }
 
 
 
-        }
+
+    }
 }

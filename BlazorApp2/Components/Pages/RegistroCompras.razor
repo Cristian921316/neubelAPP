@@ -7,9 +7,7 @@
 @inject NegocioService serviceNegocio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@attribute [Authorize]
 
-<h2>RegistroCompras</h2>
 
 <!--CABCERA DE COMPRAS-->
 
@@ -21,11 +19,21 @@
 				<div class="col-md-6">
 					<div class="row">
 
+                        <div class="col-md-6">
+                            <label for="nombre" class="form-label">Tipo Ingreso</label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select">
+                                <option>Compra</option>
+                                <option>Regalo</option>
+                            </select>
+                        </div>
+
 						<div class="col-md-6">
 							<label for="nombre" class="form-label">Registro</label>
 						</div>
 						<div class="col-md-6">
-							<input type="text" class="form-control" placeholder="000012" aria-describedby="addon-wrapping" />
+							<input type="text" class="form-control"  aria-describedby="addon-wrapping" />
 						</div>
 
 						<div class="col-md-6">
@@ -33,7 +41,7 @@
 						</div>
 
 						<div class="col-md-6">
-							<input type="text" class="form-control" placeholder="000012" aria-describedby="addon-wrapping" />
+							<input type="text" class="form-control"  aria-describedby="addon-wrapping" />
 						</div>
 
 						<div class="col-md-6">
@@ -67,6 +75,15 @@
 						</div>
 
 
+						<div class="col-md-6">
+							<label for="nombre" class="form-label">Estado</label>
+						</div>
+
+						<div class="col-md-6">
+							<input type="text" class="form-control" aria-describedby="addon-wrapping" />
+						</div>
+
+
 					</div>
 
 						
@@ -77,6 +94,35 @@
 </div>
 </div>
 
+<!--ingreso productos-->
+<div class="container mt-5">
+
+    <div class="row">
+        <div class="col-6">
+
+            
+                
+                
+				<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
+				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
+					@foreach (var producto in productosFiltrados)
+					{
+						<ComponentModel @key="producto.adpro_descripcion" Producto="producto" />
+
+						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
+							@producto.adpro_descripcion
+						</li>
+					}
+				</ul>
+
+            
+        </div>
+
+       
+
+    </div>
+
+</div>
 <!--DETALLE DE COMPRAS-->
 
 <div class="container mt-5">
@@ -115,29 +161,68 @@
                 <button type="submit" class="btn btn-primary">Guardar</button>
 
             </div>
-            <div class="col-md-4">
-
-                <div class="col-md-6">
-                    <label for="nombre" class="form-label">Subtotal</label>
-                </div>
-
-                <div class="col-md-6">
-					<input type="number" step="0.01" class="form-control" aria-describedby="addon-wrapping" />
-                </div>
-
-                <div class="col-md-6">
-                    <label for="nombre" class="form-label">Total</label>
-                </div>
-
-                <div class="col-md-6">
-					<input type="number" step="0.01" class="form-control" aria-describedby="addon-wrapping" />
-                </div>
-
-            </div>
+           
         </div>
     </div>
 </div>
 
 @code {
+
+	private string busquedaProducto = string.Empty;
+	private List<Productos> productos;
+	private List<Productos> productosFiltrados = new();
+	private bool mostrarSugerencias=false;
+	private bool _cargado = false;
+	private string idUser;
+	private Productos? productoSeleccionado;
+	
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!_cargado)
+		{
+			_cargado = true;
+
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = authState.User;
+			idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+			//se recupera el negocio por el usuario logeado
+
+
+			//negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
+
+			productos = await productoServices.getAllProductosAsync();
+
+
+
+		}
+
+	}
+
+	private void SeleccionarProducto(Productos producto)
+	{
+		productoSeleccionado = producto;
+		busquedaProducto = producto.adpro_descripcion;
+		mostrarSugerencias = false;
+	}
+
+
+	private void FiltrarProductos(string busqueda)
+	{
+		if (string.IsNullOrWhiteSpace(busqueda))
+		{
+			productosFiltrados.Clear();
+			mostrarSugerencias = false;
+			return;
+		}
+
+		productosFiltrados = productos
+			.Where(p => p.adpro_descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+			.ToList();
+
+		mostrarSugerencias = productosFiltrados.Any();
+	}
+
+	
 
 }

@@ -35,9 +35,12 @@
         </div>
     </div>
 
-    <!-- <div class="col-3">
-         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">Agregar</button>
-      </div> -->
+        <div class="col-3">
+            <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarProducto">
+                <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                Agregar Producto
+            </button>
+        </div>
 
 </div>
 
@@ -60,6 +63,8 @@ else
                     <th>CANTIDAD</th>
                     <th>VALOR</th>
                     <th>OBSERVACION</th>
+                    <th>IVA</th>
+                    <th>ICE</th>
                     <th>ESTADO</th>
                     <th>ACCION</th>
                 </tr>
@@ -73,6 +78,8 @@ else
                         <td>@producto.adpro_cantidad</td>
                         <td>@producto.adpro_valor</td>
                         <td>@producto.adpro_observacion</td>
+                        <td>@producto.adpro_iva</td>
+                        <td>@producto.adpro_ice</td>
                         <td>
                             <!-- Switch para el campo 'Activo' -->
                             <div class="form-check form-switch">
@@ -212,6 +219,12 @@ else
     private void EditarProducto(Guid id)
     {
         NavigationManager.NavigateTo($"/RegistrarProductos/{id}");
+
+    }
+
+    private void AgregarProducto()
+    {
+        NavigationManager.NavigateTo($"/RegistrarProductos");
 
     }
 
