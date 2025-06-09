@@ -5,11 +5,22 @@
 @rendermode InteractiveServer
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
+@inject TransaccProductoServices trxProductos
+@inject TipoTrxProductoServices tipoTrx
+@inject ProveedorServices proveedorService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 
 <!--CABCERA DE COMPRAS-->
+@if (mostrarMensaje)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		Registro realizado con exito.
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+
 
 <div class="container mt-5">
 	<div class="border p-4 rounded">
@@ -23,46 +34,37 @@
                             <label for="nombre" class="form-label">Tipo Ingreso</label>
                         </div>
                         <div class="col-md-6">
-                            <select class="form-select">
-                                <option>Compra</option>
-                                <option>Regalo</option>
+								<select class="form-select" @bind=@tipoIngreso>
+									@foreach (var tipo in tipoTrxProductos)
+									{
+										<option value="@tipo.adtr_codigo">@tipo.adtr_nombre</option>
+									}
                             </select>
                         </div>
 
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Registro</label>
-						</div>
-						<div class="col-md-6">
-							<input type="text" class="form-control"  aria-describedby="addon-wrapping" />
-						</div>
-
+						
 						<div class="col-md-6">
 							<label for="nombre" class="form-label">Factura</label>
 						</div>
 
 						<div class="col-md-6">
-							<input type="text" class="form-control"  aria-describedby="addon-wrapping" />
-						</div>
-
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Proveedor</label>
-						</div>
-
-						<div class="col-md-6">
-							<input type="text" class="form-control" placeholder="Buscar proveedor.." aria-describedby="addon-wrapping" />
-						</div>
+								<input type="text" class="form-control" @bind="factura" aria-describedby="addon-wrapping" />
+						</div>					
 
 					</div>
+
+					
+
 				</div>
 				<div class="col-md-6">
 					<div class="row">
 						
 						<div class="col-md-6">
-							<label for="nombre" class="form-label">Razon Social</label>
+							<label for="nombre" class="form-label">Comprador</label>
 						</div>
 
 						<div class="col-md-6">
-							<input type="text" class="form-control"  aria-describedby="addon-wrapping" />
+								<input type="text" class="form-control" @bind="comprador" aria-describedby="addon-wrapping" />
 						</div>
 												
 
@@ -71,17 +73,8 @@
 						</div>
 
 						<div class="col-md-6">
-							<input type="date" class="form-control" id="fecha" name="fecha">
-						</div>
-
-
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Estado</label>
-						</div>
-
-						<div class="col-md-6">
-							<input type="text" class="form-control" aria-describedby="addon-wrapping" />
-						</div>
+								<input type="date" class="form-control" @bind="fechaCompra" aria-describedby="addon-wrapping" />
+						</div>					
 
 
 					</div>
@@ -91,6 +84,33 @@
 			</div>
 		</div>
 	</div>
+		<!--ingreso proveedores-->
+
+		<div class="row">
+			<div class="col-md-3">
+				<label for="nombre" class="form-label">Proveedor</label>
+			</div>
+
+			<div class="col-md-9">
+
+				<InputText id="proveedor" placeholder="Proveedor..." class="form-control" autocomplete="off" @bind-Value=@busquedaProveedor @oninput="(e) => FiltrarProveedor(e.Value.ToString())" />
+				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasProveedor)">
+					@foreach (var proveedor in proveedoresFiltrado)
+					{
+						<ComponentModel @key="proveedor.adprv_nombre" Proveedor="proveedor" />
+
+						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProveedor(proveedor)">
+							@proveedor.adprv_nombre
+						</li>
+					}
+				</ul>
+
+			</div>
+
+
+		</div>
+
+
 </div>
 </div>
 
@@ -137,11 +157,44 @@
 						<th>CANTIDAD</th>
 						<th>VALOR</th>
 						<th>IVA</th>
-						<th>ICE</th>
+						<th>TOTAL</th>
+						<th>ELIMINAR</th>
 					</tr>
 				</thead>
 				<tbody>
-					
+
+					@foreach (var trxDetalle in listDetalleTrx)
+					{
+						<tr>
+							<td>@trxDetalle.adpro_codigo</td>
+							<td>@trxDetalle.adpro_nombre_producto</td>
+
+							<td>
+								<input type="number"
+									   @bind="trxDetalle.adkpr_cantidad"
+									   @bind:event="oninput"									  
+									   class="form-control form-control-sm"
+									   min="0" />
+							</td>
+
+
+
+							<td>@trxDetalle.adkpr_precio_unitario</td>
+							<td>@trxDetalle.adkpr_precio_iva</td>
+							<td>@trxDetalle.adkpr_precio_total</td>						
+
+							<td>
+								<!-- Botón de editar -->
+								<button class="btn btn-success btn-sm" style="padding: 0.1rem 0.3rem; font-size: 0.75rem;" @onclick="() => EliminarDetalle(trxDetalle)">
+									<i class="fas fa-remove"></i>
+								</button>
+
+							</td>
+
+						</tr>
+					}
+
+
 				</tbody>
 			</table>
 		</div>
@@ -158,7 +211,7 @@
             <div class="col-md-8">
 
                 <!-- Botón Guardar -->
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button  class="btn btn-primary" @onclick="() => GuardarTrxProductos()">Guardar</button>
 
             </div>
            
@@ -168,14 +221,28 @@
 
 @code {
 
+	private bool mostrarMensaje=false;
 	private string busquedaProducto = string.Empty;
 	private List<Productos> productos;
 	private List<Productos> productosFiltrados = new();
+	//proveedores
+	private List<Proveedor> proveedores;
+	private List<Proveedor> proveedoresFiltrado = new();
+	private string busquedaProveedor = string.Empty;
+	private Proveedor? proveedorSeleccionado;
+	//
 	private bool mostrarSugerencias=false;
+	private bool mostrarSugerenciasProveedor = false;
 	private bool _cargado = false;
 	private string idUser;
 	private Productos? productoSeleccionado;
-	
+	//trxProductos
+	private string tipoIngreso = "Compra",factura,comprador;
+	private DateTime fechaCompra;
+	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
+	private TransaccionesProductos newDetalleTrx = new TransaccionesProductos();
+	private List<TransaccionesProductos> listDetalleTrx = new List<TransaccionesProductos>();
+	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -192,8 +259,10 @@
 			//negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
 
 			productos = await productoServices.getAllProductosAsync();
-
-
+			proveedores = await proveedorService.getAllProveedorAsync();
+			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
+			//Para que cargue solo transacciones de ingreso
+			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo>0).ToList();
 
 		}
 
@@ -203,6 +272,9 @@
 	{
 		productoSeleccionado = producto;
 		busquedaProducto = producto.adpro_descripcion;
+		CargarDetalle(producto);
+
+
 		mostrarSugerencias = false;
 	}
 
@@ -223,6 +295,88 @@
 		mostrarSugerencias = productosFiltrados.Any();
 	}
 
+	//proveedores
+	private void SeleccionarProveedor(Proveedor proveedor)
+	{
+		proveedorSeleccionado = proveedor;
+		busquedaProveedor = proveedor.adprv_nombre;
+		mostrarSugerenciasProveedor = false;
+	}
+
+	private void FiltrarProveedor(string busqueda)
+	{
+		if (string.IsNullOrWhiteSpace(busqueda))
+		{
+			proveedoresFiltrado.Clear();
+			mostrarSugerenciasProveedor = false;
+			return;
+		}
+
+		proveedoresFiltrado = proveedores
+			.Where(p => p.adprv_nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+			.ToList();
+
+		mostrarSugerenciasProveedor = proveedoresFiltrado.Any();
+	}
+
+	private void CargarDetalle(Productos producto)
+	{
+		try
+		{
+			newDetalleTrx = new TransaccionesProductos();
+			//detalles cabecera
+			newDetalleTrx.adbu_code = 4;
+			newDetalleTrx.adkpr_factura = factura;
+			newDetalleTrx.adkpr_comprador = comprador;
+			newDetalleTrx.adprv_codigo = proveedorSeleccionado.adprv_codigo;
+			newDetalleTrx.adkpr_fecha = fechaCompra;
+			newDetalleTrx.adtr_codigo = Guid.Parse("5A90D116-E4E6-4174-9506-314B4DAEBCC0");
+			newDetalleTrx.adkpr_datecreated = DateTime.Now;
+			newDetalleTrx.adpro_codigo = producto.adpro_codigo;
+			newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
+			newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;			
+
+			listDetalleTrx.Add(newDetalleTrx);
+
+
+
+		} catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+
+		}
+
+	}
+
+	private void EliminarDetalle(TransaccionesProductos detalleEliminar)
+	{
+		listDetalleTrx.Remove(detalleEliminar);
+
+	}
+
+	private async void GuardarTrxProductos()
+	{
+		try
+		{
+			await trxProductos.GuardarLista(listDetalleTrx);
+
+			mostrarMensaje = true;
+			//Navigation.NavigateTo("/clientes");
+			StateHasChanged();
+			listDetalleTrx.Clear();
+
+			await Task.Delay(2000);
+			mostrarMensaje = false;
+			StateHasChanged();
+
+
+		} catch (Exception ex)
+		{
+			
+			
+		}
+
 	
+	}
 
 }

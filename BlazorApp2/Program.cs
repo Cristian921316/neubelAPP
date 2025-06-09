@@ -21,6 +21,9 @@ builder.Services.AddScoped<NegocioService>();
 builder.Services.AddScoped<ExportService>();
 builder.Services.AddScoped<ServiceUserNegocio>();
 builder.Services.AddScoped<ProductoServices>();
+builder.Services.AddScoped<TransaccProductoServices>();
+builder.Services.AddScoped<ProveedorServices>();
+builder.Services.AddScoped<TipoTrxProductoServices>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
