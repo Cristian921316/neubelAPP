@@ -20,7 +20,10 @@ ADKPR_PRECIO_UNITARIO,ADKPR_PRECIO_IVA,ADKPR_PRECIO_TOTAL,ADKPR_USERUPDATE,ADKPR
 		
 
 		[Column("ADPRV_CODIGO")]
-		public Guid adprv_codigo { get; set; }
+		public Guid? adprv_codigo { get; set; }
+
+		[Column("ADCU_CODE")]
+		public int? adcu_code { get; set; }
 
 		[Column("ADKPR_FECHA")]
 		public DateTime adkpr_fecha { get; set; }

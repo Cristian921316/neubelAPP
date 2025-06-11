@@ -1,4 +1,4 @@
-﻿@page "/registroCompras"
+﻿@page "/registroSalidas"
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using Microsoft.AspNetCore.Authorization
@@ -7,7 +7,7 @@
 @inject NegocioService serviceNegocio
 @inject TransaccProductoServices trxProductos
 @inject TipoTrxProductoServices tipoTrx
-@inject ProveedorServices proveedorService
+@inject ServiceClientes clienteService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
@@ -40,7 +40,7 @@
                             <label for="nombre" class="form-label">Tipo Ingreso</label>
                         </div>
                         <div class="col-md-6">
-								<select class="form-select" @bind=@tipoIngreso>
+								<select class="form-select" @bind="tipoIngreso">
 									<option value="seleccionar">--Seleccionar--</option>
 									@foreach (var tipo in tipoTrxProductos)
 									{
@@ -100,14 +100,14 @@
 
 			<div class="col-md-9">
 
-				<InputText id="proveedor" placeholder="Proveedor..." class="form-control" autocomplete="off" @bind-Value=@busquedaProveedor @oninput="(e) => FiltrarProveedor(e.Value.ToString())" />
-				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasProveedor)">
-					@foreach (var proveedor in proveedoresFiltrado)
+				<InputText id="cliente" placeholder="Cliente..." class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
+				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasCliente)">
+					@foreach (var cliente in clientesFiltrado)
 					{
-						<ComponentModel @key="proveedor.adprv_nombre" Proveedor="proveedor" />
+						<ComponentModel @key="cliente.adcu_name" Cliente="cliente" />
 
-						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProveedor(proveedor)">
-							@proveedor.adprv_nombre
+						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
+							@cliente.adcu_name
 						</li>
 					}
 				</ul>
@@ -125,9 +125,7 @@
 <div class="container mt-5">
 
     <div class="row">
-        <div class="col-6">
-
-            
+        <div class="col-6">            
                 
                 
 				<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
@@ -252,18 +250,19 @@
 	private List<Productos> productos;
 	private List<Productos> productosFiltrados = new();
 	//proveedores
-	private List<Proveedor> proveedores;
-	private List<Proveedor> proveedoresFiltrado = new();
+	private List<Clientes> clientes;
+	private List<Clientes> clientesFiltrado = new();
 	private string busquedaProveedor = string.Empty;
-	private Proveedor? proveedorSeleccionado;
+	private string busquedaCliente = string.Empty;
+	private Clientes? clienteSeleccionado;
 	//
 	private bool mostrarSugerencias=false;
-	private bool mostrarSugerenciasProveedor = false;
+	private bool mostrarSugerenciasCliente = false;
 	private bool _cargado = false;
 	private string idUser;
 	private Productos? productoSeleccionado;
 	//trxProductos
-	private string tipoIngreso = "5A90D116-E4E6-4174-9506-314B4DAEBCC0", factura, comprador, strMensajeMostrar,strObservacion;
+	private string tipoIngreso = "seleccionar", factura, comprador, strMensajeMostrar, strObservacion;
 	private DateTime fechaCompra;
 	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
 	private TransaccionesProductos newDetalleTrx = new TransaccionesProductos();
@@ -287,10 +286,10 @@
 			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
 
 			productos = await productoServices.getAllProductosAsync();
-			proveedores = await proveedorService.getAllProveedorAsync();
+			clientes = await clienteService.GetClientesAsync(negocioId);
 			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso
-			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo>0).ToList();
+			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo<0).ToList();
 
 		}
 
@@ -324,28 +323,30 @@
 	}
 
 	//proveedores
-	private void SeleccionarProveedor(Proveedor proveedor)
+	private void SeleccionarCliente(Clientes cliente)
 	{
-		proveedorSeleccionado = proveedor;
-		busquedaProveedor = proveedor.adprv_nombre;
-		mostrarSugerenciasProveedor = false;
+		clienteSeleccionado = cliente;
+		busquedaCliente = cliente.adcu_name;
+		mostrarSugerenciasCliente = false;
 	}
 
-	private void FiltrarProveedor(string busqueda)
+	private void FiltrarClientes(string busqueda)
 	{
 		if (string.IsNullOrWhiteSpace(busqueda))
 		{
-			proveedoresFiltrado.Clear();
-			mostrarSugerenciasProveedor = false;
+			clientesFiltrado.Clear();
+			mostrarSugerenciasCliente = false;
 			return;
 		}
 
-		proveedoresFiltrado = proveedores
-			.Where(p => p.adprv_nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+		clientesFiltrado = clientes
+			.Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
 			.ToList();
 
-		mostrarSugerenciasProveedor = proveedoresFiltrado.Any();
+		mostrarSugerenciasCliente = clientesFiltrado.Any();
 	}
+
+
 
 	private async Task<int> CargarDetalle(Productos producto)
 	{
@@ -362,9 +363,10 @@
 				StateHasChanged();
 				return 0;
 			}
+			
 
 			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR			
-			if (proveedorSeleccionado != null)
+			if (clienteSeleccionado != null)
 			{
 				newDetalleTrx = new TransaccionesProductos();
 				//detalles cabecera
@@ -372,7 +374,8 @@
 				newDetalleTrx.adkpr_userupdate = idUser;
 				newDetalleTrx.adkpr_factura = factura;
 				newDetalleTrx.adkpr_comprador = comprador;
-				newDetalleTrx.adprv_codigo = proveedorSeleccionado.adprv_codigo;
+				newDetalleTrx.adprv_codigo = null;//se envia en null para proveedores cuando es salida.
+				newDetalleTrx.adcu_code = clienteSeleccionado.adcu_code; //cambio cliente
 				newDetalleTrx.adkpr_fecha = fechaCompra;
 				newDetalleTrx.adtr_codigo = Guid.Parse(tipoIngreso);
 				newDetalleTrx.adkpr_datecreated = DateTime.Now;
