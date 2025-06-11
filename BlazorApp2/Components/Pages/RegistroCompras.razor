@@ -20,7 +20,13 @@
 		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 	</div>
 }
-
+@if (mesageError)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		@strMensajeMostrar
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
 
 <div class="container mt-5">
 	<div class="border p-4 rounded">
@@ -174,12 +180,22 @@
 									   @bind="trxDetalle.adkpr_cantidad"
 									   @bind:event="oninput"									  
 									   class="form-control form-control-sm"
+									   @onchange="() => ActualizarTotales(trxDetalle)"
 									   min="0" />
 							</td>
 
+							<td>
+								<input type="number"
+									   step="0.01"
+									   @bind="trxDetalle.adkpr_precio_unitario"
+									   @bind:event="oninput"
+									   @onchange="() => ActualizarTotales(trxDetalle)"
+									   class="form-control form-control-sm"
+									   min="0" />
+							</td>
 
+							
 
-							<td>@trxDetalle.adkpr_precio_unitario</td>
 							<td>@trxDetalle.adkpr_precio_iva</td>
 							<td>@trxDetalle.adkpr_precio_total</td>						
 
@@ -208,7 +224,16 @@
     <div class="border p-4 rounded">
 
         <div class="row">
-            <div class="col-md-8">
+
+			<div class="col-md-8">
+
+				<textarea id="comentario" name="comentario" @bind="strObservacion" rows="3" cols="50">
+				
+				</textarea>
+
+			</div>
+
+            <div class="col-md-4">
 
                 <!-- Botón Guardar -->
                 <button  class="btn btn-primary" @onclick="() => GuardarTrxProductos()">Guardar</button>
@@ -221,7 +246,7 @@
 
 @code {
 
-	private bool mostrarMensaje=false;
+	private bool mostrarMensaje = false, mesageError=false;
 	private string busquedaProducto = string.Empty;
 	private List<Productos> productos;
 	private List<Productos> productosFiltrados = new();
@@ -237,12 +262,14 @@
 	private string idUser;
 	private Productos? productoSeleccionado;
 	//trxProductos
-	private string tipoIngreso = "Compra",factura,comprador;
+	private string tipoIngreso = "5A90D116-E4E6-4174-9506-314B4DAEBCC0", factura, comprador, strMensajeMostrar,strObservacion;
 	private DateTime fechaCompra;
 	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
 	private TransaccionesProductos newDetalleTrx = new TransaccionesProductos();
 	private List<TransaccionesProductos> listDetalleTrx = new List<TransaccionesProductos>();
 	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
+	//negocio
+	private int negocioId;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -256,7 +283,7 @@
 			//se recupera el negocio por el usuario logeado
 
 
-			//negocio = serviceNegocio.getByUserVoid(user.Identity.Name);
+			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
 
 			productos = await productoServices.getAllProductosAsync();
 			proveedores = await proveedorService.getAllProveedorAsync();
@@ -268,11 +295,11 @@
 
 	}
 
-	private void SeleccionarProducto(Productos producto)
+	private async  void  SeleccionarProducto(Productos producto)
 	{
 		productoSeleccionado = producto;
 		busquedaProducto = producto.adpro_descripcion;
-		CargarDetalle(producto);
+		await CargarDetalle(producto);
 
 
 		mostrarSugerencias = false;
@@ -319,30 +346,55 @@
 		mostrarSugerenciasProveedor = proveedoresFiltrado.Any();
 	}
 
-	private void CargarDetalle(Productos producto)
+	private async Task<int> CargarDetalle(Productos producto)
 	{
 		try
 		{
-			newDetalleTrx = new TransaccionesProductos();
-			//detalles cabecera
-			newDetalleTrx.adbu_code = 4;
-			newDetalleTrx.adkpr_factura = factura;
-			newDetalleTrx.adkpr_comprador = comprador;
-			newDetalleTrx.adprv_codigo = proveedorSeleccionado.adprv_codigo;
-			newDetalleTrx.adkpr_fecha = fechaCompra;
-			newDetalleTrx.adtr_codigo = Guid.Parse("5A90D116-E4E6-4174-9506-314B4DAEBCC0");
-			newDetalleTrx.adkpr_datecreated = DateTime.Now;
-			newDetalleTrx.adpro_codigo = producto.adpro_codigo;
-			newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
-			newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;			
+			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR			
+			if (proveedorSeleccionado != null)
+			{
+				newDetalleTrx = new TransaccionesProductos();
+				//detalles cabecera
+				newDetalleTrx.adbu_code = negocioId;
+				newDetalleTrx.adkpr_userupdate = idUser;
+				newDetalleTrx.adkpr_factura = factura;
+				newDetalleTrx.adkpr_comprador = comprador;
+				newDetalleTrx.adprv_codigo = proveedorSeleccionado.adprv_codigo;
+				newDetalleTrx.adkpr_fecha = fechaCompra;
+				newDetalleTrx.adtr_codigo = Guid.Parse(tipoIngreso);
+				newDetalleTrx.adkpr_datecreated = DateTime.Now;
+				newDetalleTrx.adpro_codigo = producto.adpro_codigo;
+				newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
+				newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;
+				newDetalleTrx.adkpr_observacion = strObservacion;
 
-			listDetalleTrx.Add(newDetalleTrx);
+				listDetalleTrx.Add(newDetalleTrx);
+
+
+				return 1;
+
+			}
+			else
+			{
+				mesageError = true;
+				strMensajeMostrar = "No se ha seleccionado proveedor!";
+
+				await Task.Delay(1000);
+				mesageError = false;
+				StateHasChanged();
+				return 0;
+
+
+			}
+
+
 
 
 
 		} catch (Exception ex)
 		{
 			Console.WriteLine(ex.Message);
+			return 0;
 
 		}
 
@@ -354,29 +406,66 @@
 
 	}
 
+	private void ActualizarTotales(TransaccionesProductos trxDetalleAct)
+	{
+		trxDetalleAct.adkpr_precio_total = trxDetalleAct.adkpr_cantidad * trxDetalleAct.adkpr_precio_unitario;
+
+	}
+
 	private async void GuardarTrxProductos()
 	{
 		try
 		{
-			await trxProductos.GuardarLista(listDetalleTrx);
+			if (listDetalleTrx.Count > 0)
+			{
 
-			mostrarMensaje = true;
-			//Navigation.NavigateTo("/clientes");
-			StateHasChanged();
-			listDetalleTrx.Clear();
+				await trxProductos.GuardarLista(listDetalleTrx);
 
-			await Task.Delay(2000);
-			mostrarMensaje = false;
-			StateHasChanged();
+				mostrarMensaje = true;
+				//Navigation.NavigateTo("/clientes");
+				StateHasChanged();
+				listDetalleTrx.Clear();
+
+				//una vez se guardado se envia a limpiar
+				busquedaProveedor = string.Empty;
+				busquedaProducto = string.Empty;
+				comprador = string.Empty;
+				factura = string.Empty;
+				strObservacion = string.Empty;
+
+				await Task.Delay(1000);
+				mostrarMensaje = false;
+				StateHasChanged();
+
+
+			}
+			else
+			{
+				mesageError = true;
+				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
+
+				await Task.Delay(1000);
+				mesageError = false;
+				StateHasChanged();
+				
+			}
+
 
 
 		} catch (Exception ex)
 		{
-			
-			
+			mesageError = true;
+			strMensajeMostrar = ex.Message;
+
+			await Task.Delay(1000);
+			mesageError = false;
+			StateHasChanged();
+
 		}
 
 	
 	}
+
+
 
 }

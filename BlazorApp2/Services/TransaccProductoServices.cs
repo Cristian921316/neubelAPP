@@ -31,9 +31,7 @@ namespace BlazorApp2.Services
 			}
 			catch (Exception ex)
 			{
-				// Manejo de errores (puedes loguear el error si lo necesitas)
-				Console.WriteLine($"Error al guardar el producto: {ex.Message}");
-				return false;
+				throw;
 			}
 		}
 
