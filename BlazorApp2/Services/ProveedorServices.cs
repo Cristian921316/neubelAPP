@@ -18,12 +18,12 @@ namespace BlazorApp2.Services
 			_context = context;
 		}
 
-		public async Task<List<Proveedor>> getAllProveedorAsync()
+		public async Task<List<Proveedor>> getAllProveedorAsync(int idNegocio)
 		{
 
 			try
 			{
-				return await _context.Proveedor.ToListAsync();
+				return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).ToListAsync();
 
 
 			}
@@ -35,6 +35,47 @@ namespace BlazorApp2.Services
 
 		}
 
+        public async Task<Proveedor?> getById(Guid id)
+        {
+            try
+            {
+                return await _context.Proveedor.FirstOrDefaultAsync(p => p.adprv_codigo == id);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores (puedes loguear el error si lo necesitas)
+                Console.WriteLine($"Error al buscar el proveedor: {ex.Message}");
+                return null;
+            }
 
-	}
+        }
+
+        public async Task<bool> GuardarProveedor(Proveedor proveedor, bool guardarOK)
+        {
+            try
+            {
+                // _context.Entry(cliente).State = EntityState.Modified;
+                if (guardarOK)
+                {
+                    proveedor.adprv_datecreated = DateTime.Now;
+                    await _context.Proveedor.AddAsync(proveedor); //guardar
+                }
+                else
+                {
+                    proveedor.adprv_dateupdate = DateTime.Now;
+                    _context.Entry(proveedor).State = EntityState.Modified; //modificar
+                }
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores (puedes loguear el error si lo necesitas)
+                Console.WriteLine($"Error al guardar el proveedor: {ex.Message}");
+                return false;
+            }
+        }
+
+
+    }
 }

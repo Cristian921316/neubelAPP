@@ -11,7 +11,7 @@
 
 <PageTitle>Clientes</PageTitle>
 
-<h1>CLIENTES</h1>
+<h2>Clientes</h2>
 
 
 <!-- Filtro de búsqueda -->
@@ -24,9 +24,12 @@
         </div>
     </div>
 
-   <!-- <div class="col-3">
-        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal">Agregar</button>
-     </div> -->
+    <div class="col-3">
+        <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarCliente">
+            <i class="bi bi-file-earmark-arrow-down me-2"></i>
+            Agregar
+        </button>
+    </div>
 
  </div>
 
@@ -61,7 +64,7 @@ else if (clientes.Count == 0)
 else
 {
     <div class="table-responsive">
-        <table class="table table-striped table-bordered table-hover">
+        <table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
             <thead>
                 <tr>
                     
@@ -86,7 +89,7 @@ else
                         <td>
                             <!-- Botón de editar -->
                             <button class="btn btn-success btn-sm" @onclick="() => EditarCliente(cliente.adcu_code)">
-                                <i class="fas fa-edit"></i> Editar
+                                <i class="fas fa-edit"></i>
                             </button>
 
                         </td>
@@ -115,6 +118,12 @@ else
 
         clientes = await ClienteService.GetClientesAsync(negocio.adbu_code);
         
+    }
+
+    private void AgregarCliente()
+    {
+        NavigationManager.NavigateTo($"/RegistrarClientes");
+
     }
 
     private void EditarCliente(int id)

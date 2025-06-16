@@ -48,7 +48,7 @@ namespace BlazorApp2.Models
 		public string? adprv_observacion { get; set; }
 
 		[Column("ADPRV_USERUPDATE")]
-		public string adprv_userupdate { get; set; }
+		public string? adprv_userupdate { get; set; }
 
 		[Column("ADPRV_DATECREATED")]
 		public DateTime? adprv_datecreated { get; set; }
