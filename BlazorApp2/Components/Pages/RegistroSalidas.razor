@@ -104,7 +104,7 @@
 				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasCliente)">
 					@foreach (var cliente in clientesFiltrado)
 					{
-						<ComponentModel @key="cliente.adcu_name" Cliente="cliente" />
+						<ComponentModel @key="cliente.adcu_code" Cliente="cliente" />
 
 						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
 							@cliente.adcu_name
@@ -331,18 +331,27 @@
 
 	private void FiltrarClientes(string busqueda)
 	{
-		if (string.IsNullOrWhiteSpace(busqueda))
+		try
 		{
-			clientesFiltrado.Clear();
-			mostrarSugerenciasCliente = false;
-			return;
+			if (string.IsNullOrWhiteSpace(busqueda))
+			{
+				clientesFiltrado.Clear();
+				mostrarSugerenciasCliente = false;
+				return;
+			}
+
+			clientesFiltrado = clientes
+				.Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+
+			mostrarSugerenciasCliente = clientesFiltrado.Any();
+		}
+		catch (Exception ex)
+		{
+			Console.Write(ex.Message);
+
 		}
 
-		clientesFiltrado = clientes
-			.Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-			.ToList();
-
-		mostrarSugerenciasCliente = clientesFiltrado.Any();
 	}
 
 
@@ -423,7 +432,7 @@
 
 	private void ActualizarTotales(TransaccionesProductos trxDetalleAct)
 	{
-		trxDetalleAct.adkpr_precio_total = trxDetalleAct.adkpr_cantidad * trxDetalleAct.adkpr_precio_unitario;
+		trxDetalleAct.adkpr_precio_total = trxDetalleAct.adkpr_cantidad * (trxDetalleAct.adkpr_precio_unitario + trxDetalleAct.adkpr_precio_iva);
 
 	}
 
