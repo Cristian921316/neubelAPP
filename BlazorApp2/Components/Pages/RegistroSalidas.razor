@@ -71,7 +71,7 @@
 						</div>
 
 						<div class="col-md-6">
-								<input type="text" class="form-control" @bind="comprador" aria-describedby="addon-wrapping" />
+								<input type="text" class="form-control" @bind="comprador" aria-describedby="addon-wrapping" disabled/>
 						</div>
 												
 
@@ -280,7 +280,7 @@
 			var user = authState.User;
 			idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 			//se recupera el negocio por el usuario logeado
-
+			comprador = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
 
 			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
 
