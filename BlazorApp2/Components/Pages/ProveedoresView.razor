@@ -2,12 +2,12 @@
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using Microsoft.AspNetCore.Authorization
-@rendermode InteractiveServer
 @inject ProveedorServices proveedoresService
 @inject NegocioService serviceNegocio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 @attribute [Authorize]
 
 
@@ -170,7 +170,7 @@ else
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
         idNegocio = negocio.adbu_code;
 
-        proveedores = await proveedoresService.getAllProveedorAsync(idNegocio);        
+        proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);        
 
 
     }

@@ -23,7 +23,13 @@ namespace BlazorApp2.Services
 
 			try
 			{
-				return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).ToListAsync();
+				return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).AsNoTracking().Select(p => new  Proveedor
+                {
+                    // Aquí especificas los dos campos que quieres retornar
+                    adprv_codigo = p.adprv_codigo, // Suponiendo que 'Nombre' es uno de los campos
+                    adprv_nombre = p.adprv_nombre    // Suponiendo que 'RUC' es el otro campo
+                })
+                     .ToListAsync();
 
 
 			}
@@ -34,6 +40,24 @@ namespace BlazorApp2.Services
 			}
 
 		}
+
+        public async Task<List<Proveedor>> getAllProveedorAsyncPage(int idNegocio)
+        {
+
+            try
+            {
+                return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).Take(10).ToListAsync();
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+        }
+
 
         public async Task<Proveedor?> getById(Guid id)
         {

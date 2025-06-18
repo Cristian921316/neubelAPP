@@ -19,6 +19,24 @@
 
 		}
 
+		public async Task<List<Clientes>> GetClientesAsyncSalida(int idNegocio)
+		{
+			return await _context.Clientes.Where(c => c.adbu_code == idNegocio).AsNoTracking().Select(c => new Clientes
+			{
+				// Aquí especificas los dos campos que quieres retornar
+				adcu_code = c.adcu_code,
+				adcu_name = c.adcu_name				
+			})
+					 .ToListAsync();
+
+		}
+
+		public async Task<List<Clientes>> GetClientesAsyncPage(int idNegocio)
+        {
+            return await _context.Clientes.Where(c => c.adbu_code == idNegocio).Take(10).ToListAsync();
+
+        }
+
         public async Task<List<Clientes>> GetClientesActivosAsync(int idNegocio)
         {
             return await _context.Clientes.Where(c => c.adbu_code == idNegocio && c.adcu_estado).ToListAsync();

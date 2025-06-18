@@ -116,7 +116,7 @@ else
         //se recupera el negocio por el usuario logeado
         negocio = await serviceNegocio.getByUser(user.Identity.Name);
 
-        clientes = await ClienteService.GetClientesAsync(negocio.adbu_code);
+        clientes = await ClienteService.GetClientesAsyncPage(negocio.adbu_code);
         
     }
 

@@ -2,12 +2,12 @@
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using Microsoft.AspNetCore.Authorization
-@rendermode InteractiveServer
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+@inject ProductoState productoState
+@rendermode InteractiveServer
 
 <PageTitle>Productos</PageTitle>
 
@@ -38,19 +38,15 @@
         <div class="col-3">
             <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarProducto">
                 <i class="bi bi-file-earmark-arrow-down me-2"></i>
-                Agregar Producto
+                Agregar
             </button>
         </div>
 
 </div>
 
-@if (productos == null)
+@if (productoState.Productos == null || !productoState.Productos.Any())
 {
-    // <p>Cargando clientes...</p>
-}
-else if (productos.Count == 0)
-{
-    <p>No hay productos disponibles.</p>
+    <p>Cargando productos...</p>
 }
 else
 {
@@ -70,7 +66,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var producto in FiltrarProductos)
+                    @foreach (var producto in productoState.Productos)
                 {
                     <tr>
                         <td>@producto.adpro_codigoalterno1</td>
@@ -101,12 +97,7 @@ else
         </table>
     </div>
 
-    <!-- Paginador -->
-    <div class="d-flex justify-content-between">
-        <button class="btn btn-primary" @onclick="PaginaAnterior" disabled="@(paginaActual == 1)">Ant</button>
-        <span>Página @paginaActual de @totalPaginas</span>
-        <button class="btn btn-primary" @onclick="PaginaSiguiente" disabled="@(paginaActual == totalPaginas)">Sig</button>
-    </div>
+    
 
 }
 
@@ -149,72 +140,17 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        if (!_isDataLoaded)
+        if (!productoState.IsDataLoaded)
         {
-            
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            //se recupera el negocio por el usuario logeado
-            negocio = await serviceNegocio.getByUser(user.Identity.Name);
-
-
-            productos = await productoServices.getAllProductosAsync();
-
-            _isDataLoaded = true; // Marca que los datos ya fueron cargados
+            productoState.Productos = await productoServices.getAllProductosAsyncPage(1, 10,"");
+            productoState.IsDataLoaded = true;
         }
         
 
     }
 
-    private async void  CargarDatos()
-    {
-        try
-        {
-            productos = await productoServices.getAllProductosAsync();
-
-            /*totalRegistros = productos.Count;
-
-            totalPaginas = (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
-
-            productos = FiltrarProductos
-                .OrderBy(c => c.adpro_descripcion)
-                .Skip((paginaActual - 1) * registrosPorPagina)
-                .Take(registrosPorPagina)
-                .ToList();*/
-
-        } catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-
-        }
-
-
-    }
-
-    private void PaginaAnterior()
-    {
-        if (paginaActual > 1)
-        {
-            paginaActual--;
-            CargarDatos();
-        }
-    }
-
-    private void PaginaSiguiente()
-    {
-        if (paginaActual < totalPaginas)
-        {
-            paginaActual++;
-            CargarDatos();
-        }
-    }
-
-    private async Task AbrirOffcanvas()
-    {
-        // Muestra el offcanvas usando JavaScript
-        await JSRuntime.InvokeVoidAsync("showOffcanvas", offcanvasId);
-    }
+   
+      
 
     private void EditarProducto(Guid id)
     {

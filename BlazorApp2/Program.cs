@@ -2,10 +2,12 @@ using BlazorApp2.Components;
 using BlazorApp2.Components.Account;
 using BlazorApp2.Data;
 using BlazorApp2.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Syncfusion.Blazor;
+using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,7 @@ builder.Services.AddScoped<ProductoServices>();
 builder.Services.AddScoped<TransaccProductoServices>();
 builder.Services.AddScoped<ProveedorServices>();
 builder.Services.AddScoped<TipoTrxProductoServices>();
+builder.Services.AddScoped<ProductoState>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -70,6 +73,7 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();

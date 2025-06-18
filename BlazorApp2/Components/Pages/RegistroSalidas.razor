@@ -10,7 +10,7 @@
 @inject ServiceClientes clienteService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-
+@attribute [Authorize]
 
 <!--CABCERA DE COMPRAS-->
 @if (mostrarMensaje)
@@ -132,7 +132,7 @@
 				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
 					@foreach (var producto in productosFiltrados)
 					{
-						<ComponentModel @key="producto.adpro_descripcion" Producto="producto" />
+						<ComponentModel @key="producto.adpro_codigo" Producto="producto" />
 
 						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
 							@producto.adpro_descripcion
@@ -284,8 +284,8 @@
 
 			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
 
-			productos = await productoServices.getAllProductosAsync();
-			clientes = await clienteService.GetClientesAsync(negocioId);
+			productos = await productoServices.getAllProductosCompraAsync();
+			clientes = await clienteService.GetClientesAsyncSalida(negocioId);
 			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso
 			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo<0).ToList();
@@ -390,6 +390,7 @@
 				newDetalleTrx.adpro_codigo = producto.adpro_codigo;
 				newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
 				newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;
+				newDetalleTrx.adkpr_precio_iva = newDetalleTrx.adkpr_precio_unitario * decimal.Parse("0.15");
 				newDetalleTrx.adkpr_observacion = strObservacion;
 
 				listDetalleTrx.Add(newDetalleTrx);
@@ -451,7 +452,7 @@
 				listDetalleTrx.Clear();
 
 				//una vez se guardado se envia a limpiar
-				busquedaProveedor = string.Empty;
+				busquedaCliente = string.Empty;
 				busquedaProducto = string.Empty;
 				comprador = string.Empty;
 				factura = string.Empty;

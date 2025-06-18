@@ -3,6 +3,8 @@ using BlazorApp2.Data;
 using BlazorApp2.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components.Authorization;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System.Diagnostics;
 
 
 namespace BlazorApp2.Services
@@ -21,7 +23,8 @@ namespace BlazorApp2.Services
 
             try
             {
-                return await _context.Productos.ToListAsync();
+				
+				return await _context.Productos.AsNoTracking().ToListAsync();
 
 
             }
@@ -33,7 +36,66 @@ namespace BlazorApp2.Services
 
         }
 
-        public async Task<Productos?> getById(Guid id)
+        public async Task<List<Productos>> getAllProductosCompraAsync()
+        {
+
+            try
+            {
+
+                return await _context.Productos.AsNoTracking().AsNoTracking().Select(p => new Productos
+                {
+                    // Aquí especificas los dos campos que quieres retornar
+                    adpro_codigo = p.adpro_codigo, 
+                    adpro_descripcion = p.adpro_descripcion, 
+                    adpro_valor = p.adpro_valor    
+                })
+                     .ToListAsync();
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+        }
+
+        public async Task<List<Productos>> getAllProductosAsyncPage(int pageNumber, int pageSize,string descripcion)
+		{
+
+			try
+			{
+                if (descripcion.Length > 0)
+                {
+
+                    return await _context.Productos.OrderBy(p => p.adpro_descripcion) // ¡Importante ordenar para paginación consistente!												
+												.Take(pageSize)
+												.Where(p => p.adpro_descripcion.ToLower().Contains(descripcion.ToLower()))
+												.ToListAsync();
+				}
+                else {
+
+					return await _context.Productos.AsNoTracking().OrderBy(p => p.adpro_descripcion) // ¡Importante ordenar para paginación consistente!
+												.Skip((pageNumber - 1) * pageSize)
+												.Take(pageSize)
+												.ToListAsync();
+
+				}
+
+				
+
+
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+
+		}
+
+		public async Task<Productos?> getById(Guid id)
         {
             try
             {

@@ -2,6 +2,7 @@
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using Microsoft.AspNetCore.Authorization
+@using System.Diagnostics
 @rendermode InteractiveServer
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
@@ -10,6 +11,19 @@
 @inject ProveedorServices proveedorService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+@if (isCargando)
+{
+	<div class="spinner-container">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Cargando...</span>
+		</div>
+		<p>Cargando datos, por favor espera...</p>
+	</div>
+}
+else 
+{
 
 
 <!--CABCERA DE COMPRAS-->
@@ -109,7 +123,7 @@
 				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasProveedor)">
 					@foreach (var proveedor in proveedoresFiltrado)
 					{
-						<ComponentModel @key="proveedor.adprv_nombre" Proveedor="proveedor" />
+						<ComponentModel @key="proveedor.adprv_codigo" Proveedor="proveedor" />
 
 						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProveedor(proveedor)">
 							@proveedor.adprv_nombre
@@ -139,7 +153,7 @@
 				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
 					@foreach (var producto in productosFiltrados)
 					{
-						<ComponentModel @key="producto.adpro_descripcion" Producto="producto" />
+						<ComponentModel @key="producto.adpro_codigo" Producto="producto" />
 
 						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
 							@producto.adpro_descripcion
@@ -249,6 +263,8 @@
     </div>
 </div>
 
+}
+
 @code {
 
 	private bool mostrarMensaje = false, mesageError=false;
@@ -275,12 +291,15 @@
 	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
 	//negocio
 	private int negocioId;
+	private bool isCargando = false; // <- bandera para mostrar el spinner
+
 
 	protected override async Task OnInitializedAsync()
-	{
-		if (!_cargado)
-		{
-			_cargado = true;
+	{		
+
+			
+
+			
 
 			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 			var user = authState.User;
@@ -288,15 +307,20 @@
 			//se recupera el negocio por el usuario logeado
 
 
-			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
+			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;			
+
 
 			productos = await productoServices.getAllProductosAsync();
 			proveedores = await proveedorService.getAllProveedorAsync(negocioId);
+
+
 			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso
 			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo>0).ToList();
 
-		}
+			isCargando = false;
+
+		
 
 	}
 
