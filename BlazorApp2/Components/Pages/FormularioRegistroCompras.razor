@@ -7,6 +7,7 @@
 @inject NegocioService serviceNegocio
 @inject ServiceCabeceraCompra serviceCabeceraCompra
 @inject ServiceDetalleCompra serviceDetalleCompra
+@inject TransaccProductoServices serviceTrxProductos
 @inject TipoTrxProductoServices tipoTrx
 @inject ProveedorServices proveedorService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -281,6 +282,9 @@
 	private bool isCargando = false; // <- bandera para mostrar el spinner
 	private CabeceraCompra cabeceraCompra;
 
+	[Parameter]
+	public EventCallback<bool> OnFormSubmitted { get; set; } // Este EventCallback notifica al padre
+
 	protected override async Task OnInitializedAsync()
 	{
 		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -445,28 +449,37 @@
 					listDetalleTrx[i].adcom_codigo = cabeceraCompra.adcom_codigo;
 
 				}
+				//se guarda detalle
 				await serviceDetalleCompra.guardarDetalleCompra(listDetalleTrx,true);
+
+				//se realiza la actualizacion sobre el producto e insert transaccional
+				await serviceTrxProductos.InsertUpdateTrxProducts("ENTRADA",cabeceraCompra.adcom_codigo);
 
 				//se setea las listas y la cabecera
 				cabeceraCompra = new CabeceraCompra();
 				listDetalleTrx.Clear();
 
-				mostrarMensaje = true;
+				//Si todo es exitoso se envia a cerrar pasandole el exito o fracaso al padre.
+				await OnFormSubmitted.InvokeAsync(true); // Pasar 'true' indica éxito
+
+				/*mostrarMensaje = true;
 				strMensajeMostrar = "Registrado con exito!";
 				await Task.Delay(1000);
 				mostrarMensaje = false;
-				StateHasChanged();
+				StateHasChanged();*/
 
 
 			}
 			else
 			{
-				mesageError = true;
+				await OnFormSubmitted.InvokeAsync(false); // Pasar 'true' indica éxito
+
+				/*mesageError = true;
 				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
 
 				await Task.Delay(1000);
 				mesageError = false;
-				StateHasChanged();
+				StateHasChanged();*/
 
 			}
 

@@ -45,7 +45,7 @@
 				<thead>
 					<tr>
 						<th>FACTURA</th>
-						<th>PROVEEDOR</th>
+						<th>COMPRADOR</th>
 						<th>OBSERVACION</th>
 						<th>REGISTRO</th>
 						<th>ACCION</th>						
@@ -57,7 +57,7 @@
 					{
 						<tr>
 							<td>@compra.adcom_factura</td>
-							<td>@compra.adprv_codigo</td>
+							<td>@compra.adcom_comprador</td>
 							<td>@compra.adcom_observacion</td>
 							<td>@compra.adcom_dateCreated</td>
 							<td>
@@ -88,7 +88,7 @@
 				@* --- ¡RENDERIZACIÓN CONDICIONAL AQUÍ! --- *@
                 @if (mostrarFormularioModal)
                 {
-                    <FormularioRegistroCompras />
+					<FormularioRegistroCompras OnFormSubmitted="HandleFormSubmitted" />
                 }
                 else
                 {
@@ -144,8 +144,8 @@
 
 		} catch (Exception ex)
 		{
-			
-			
+
+
 		}
 
 
@@ -155,9 +155,35 @@
 	{
 
 		//await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
-		
+
 
 	}
+
+	// Este método se ejecuta cuando el formulario hijo (FormularioRegistroCompras) invoca OnFormSubmitted
+	private async Task HandleFormSubmitted(bool success)
+	{
+		if (success)
+		{
+			Console.WriteLine("Formulario guardado exitosamente. Cerrando modal.");
+			// ¡CRUCIAL! Llama a la función JavaScript para ocultar el modal
+			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
+
+			//Se envia actualizar las compras
+			compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(negocioId);
+
+			mostrarFormularioModal = false;
+			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
+
+			
+		}
+		else
+		{
+			
+			Console.WriteLine("Operación de formulario no exitosa o cancelada. Modal permanece abierto.");
+		}
+	}
+
+
 
 	private IEnumerable<CabeceraCompra> FiltrarCompras =>
 		compras.Where(compra => string.IsNullOrEmpty(searchTerm) || compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) );
