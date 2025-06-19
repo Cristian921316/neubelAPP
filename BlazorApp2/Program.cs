@@ -27,6 +27,8 @@ builder.Services.AddScoped<TransaccProductoServices>();
 builder.Services.AddScoped<ProveedorServices>();
 builder.Services.AddScoped<TipoTrxProductoServices>();
 builder.Services.AddScoped<ProductoState>();
+builder.Services.AddScoped<ServiceCabeceraCompra>();
+builder.Services.AddScoped<ServiceDetalleCompra>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();

@@ -19,11 +19,15 @@ namespace BlazorApp2.Data
 
         public DbSet<Productos> Productos { get; set; }
 
-		public DbSet<TransaccionesProductos> TransaccionesProductos { get; set; }
+        public DbSet<TransaccionesProductos> TransaccionesProductos { get; set; }
 
-		public DbSet<Proveedor> Proveedor { get; set; }
+        public DbSet<Proveedor> Proveedor { get; set; }
 
-		public DbSet<TipoTrxProducto> TipoTrxProductos { get; set; }
+        public DbSet<TipoTrxProducto> TipoTrxProductos { get; set; }
+
+        public DbSet<CabeceraCompra> CabeceraCompras { get; set; }
+
+		public DbSet<DetalleCompra> DetalleCompras { get; set; }
 
 
 	}

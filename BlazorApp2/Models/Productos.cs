@@ -33,7 +33,7 @@ namespace BlazorApp2.Models
         public string? adpro_descripcion { get; set; }
 
         [Column("ADPRO_CANTIDAD")]
-        public int adpro_cantidad { get; set; }
+        public decimal adpro_cantidad { get; set; }
 
 
         [Column("ADPRO_VALOR")]

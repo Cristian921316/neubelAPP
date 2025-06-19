@@ -26,11 +26,14 @@ namespace BlazorApp2.Models
 		[Column("ADPRO_CODIGO")]
 		public Guid adpro_codigo { get; set; }
 
+		[Column("ADPRO_NOMBRE")]
+		public string adpro_nombre { get; set; }
+
 		[Column("ADTC_CANTIDAD")]
-		public int? adcom_cantidad { get; set; }
+		public decimal adtc_cantidad { get; set; }
 
 		[Column("ADTC_PRECIO_UNITARIO")]
-		public decimal? adcom_precioUnitario { get; set; }
+		public decimal adtc_precioUnitario { get; set; }
 
 		[Column("ADTC_PRECIO_TOTAL")]
 		public decimal? adtc_precio_total { get; set; }

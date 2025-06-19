@@ -6,228 +6,67 @@
 @rendermode InteractiveServer
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
-@inject TransaccProductoServices trxProductos
+@inject ServiceCabeceraCompra serviceCabeceraCompra
 @inject TipoTrxProductoServices tipoTrx
 @inject ProveedorServices proveedorService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Compras</PageTitle>
 
-@if (isCargando)
-{
-	<div class="spinner-container">
-		<div class="spinner-border text-primary" role="status">
-			<span class="visually-hidden">Cargando...</span>
-		</div>
-		<p>Cargando datos, por favor espera...</p>
-	</div>
-}
-else 
-{
+<div class="row">
 
-
-<!--CABCERA DE COMPRAS-->
-@if (mostrarMensaje)
-{
-	<div class="alert alert-success alert-dismissible fade show" role="alert">
-		Registro realizado con exito.
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
-@if (mesageError)
-{
-	<div class="alert alert-danger alert-dismissible fade show" role="alert">
-		@strMensajeMostrar
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
-
-<div class="container mt-5">
-	<div class="border p-4 rounded">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="row">
-				<div class="col-md-6">
-					<div class="row">
-
-                        <div class="col-md-6">
-                            <label for="nombre" class="form-label">Tipo Ingreso</label>
-                        </div>
-                        <div class="col-md-6">
-								<select class="form-select" @bind=@tipoIngreso>
-									<option value="seleccionar">--Seleccionar--</option>
-									@foreach (var tipo in tipoTrxProductos)
-									{
-										<option value="@tipo.adtr_codigo">@tipo.adtr_nombre</option>
-									}
-                            </select>
-                        </div>
-
-						
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Factura</label>
-						</div>
-
-						<div class="col-md-6">
-								<input type="text" class="form-control" placeholder="###-###-#########" @bind="factura" aria-describedby="addon-wrapping" />
-						</div>					
-
-					</div>
-
-					
-
-				</div>
-				<div class="col-md-6">
-					<div class="row">
-						
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Comprador</label>
-						</div>
-
-							<div class="col-md-6">
-								<select class="form-select" @bind=@comprador>
-									<option value="seleccionar">--Seleccionar--</option>
-									<option value="CHRISTIAN OSMANI AGUILAR">CHRISTIAN OSMANI AGUILAR</option>
-									<option value="DCMI">DCMI</option>
-									<option value="MAVELA ARMIJOS">MAVELA ARMIJOS</option>									
-								</select>
-							</div>
-												
-
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Fecha</label>
-						</div>
-
-						<div class="col-md-6">
-								<input type="date" class="form-control" @bind="fechaCompra" aria-describedby="addon-wrapping" />
-						</div>					
-
-
-					</div>
-
-						
-				</div>
-			</div>
+	<div class="col-9">
+		<div class="input-group flex-nowrap">
+			<span class="input-group-text" id="addon-wrapping">Buscar</span>
+			<input type="text" class="form-control" placeholder="Por factura,proveedor" aria-describedby="addon-wrapping" @bind="searchTerm" />
 		</div>
 	</div>
-		<!--ingreso proveedores-->
 
-		<div class="row">
-			<div class="col-md-3">
-				<label for="nombre" class="form-label">Proveedor</label>
-			</div>
-
-			<div class="col-md-9">
-
-				<InputText id="proveedor" placeholder="Proveedor..." class="form-control" autocomplete="off" @bind-Value=@busquedaProveedor @oninput="(e) => FiltrarProveedor(e.Value.ToString())" />
-				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasProveedor)">
-					@foreach (var proveedor in proveedoresFiltrado)
-					{
-						<ComponentModel @key="proveedor.adprv_codigo" Proveedor="proveedor" />
-
-						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProveedor(proveedor)">
-							@proveedor.adprv_nombre
-						</li>
-					}
-				</ul>
-
-			</div>
-
-
-		</div>
-
+	<div class="col-3">
+		<button class="btn btn-primary  mb-0 me-2" @onclick="AgregarCompra">
+			<i class="bi bi-file-earmark-arrow-down me-2"></i>
+			Agregar
+		</button>
+	</div>
 
 </div>
-</div>
 
-<!--ingreso productos-->
-<div class="container mt-5">
 
-    <div class="row">
-        <div class="col-6">
 
-            
-                
-                
-				<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
-				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
-					@foreach (var producto in productosFiltrados)
-					{
-						<ComponentModel @key="producto.adpro_codigo" Producto="producto" />
-
-						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
-							@producto.adpro_descripcion
-						</li>
-					}
-				</ul>
-
-            
-        </div>
-
-       
-
-    </div>
-
-</div>
-<!--DETALLE DE COMPRAS-->
-
+<!--Detalle de listado de compras-->
 <div class="container mt-5">
 	<div class="border p-4 rounded">
 
 		<div class="table-responsive">
 			<table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
 				<thead>
-					<tr>						
-						<th>DESCRIPCION</th>
-						<th>CANTIDAD</th>
-						<th>VALOR</th>
-						<th>IVA</th>
-						<th>TOTAL</th>
-						<th>ELIMINAR</th>
+					<tr>
+						<th>FACTURA</th>
+						<th>PROVEEDOR</th>
+						<th>OBSERVACION</th>
+						<th>REGISTRO</th>
+						<th>ACCION</th>						
 					</tr>
 				</thead>
 				<tbody>
 
-					@foreach (var trxDetalle in listDetalleTrx)
+					@foreach (var compra in FiltrarCompras)
 					{
 						<tr>
-							
-							<td>@trxDetalle.adpro_nombre_producto</td>
-
-							<td>
-								<input type="number"
-									   @bind="trxDetalle.adkpr_cantidad"
-									   @bind:event="oninput"									  
-									   class="form-control form-control-sm"
-									   @onchange="() => ActualizarTotales(trxDetalle)"
-									   min="0" />
-							</td>
-
-							<td>
-								<input type="number"
-									   step="0.01"
-									   @bind="trxDetalle.adkpr_precio_unitario"
-									   @bind:event="oninput"
-									   @onchange="() => ActualizarTotales(trxDetalle)"
-									   class="form-control form-control-sm"
-									   min="0" />
-							</td>
-
-							
-
-							<td>@trxDetalle.adkpr_precio_iva</td>
-							<td>@trxDetalle.adkpr_precio_total</td>						
-
+							<td>@compra.adcom_factura</td>
+							<td>@compra.adprv_codigo</td>
+							<td>@compra.adcom_observacion</td>
+							<td>@compra.adcom_dateCreated</td>
 							<td>
 								<!-- Botón de editar -->
-								<button class="btn btn-success btn-sm" style="padding: 0.1rem 0.3rem; font-size: 0.75rem;" @onclick="() => EliminarDetalle(trxDetalle)">
-									<i class="fas fa-remove"></i>
+								<button class="btn btn-success btn-sm">
+									<i class="fa-regular fa-eye"></i>
 								</button>
 
 							</td>
-
 						</tr>
 					}
 
@@ -236,280 +75,91 @@ else
 			</table>
 		</div>
 
-
-
-    </div>
+	</div>
 </div>
 
-<div class="container mt-5">
-    <div class="border p-4 rounded">
-
-        <div class="row">
-
-			<div class="col-md-8">
-
-				<textarea id="comentario" name="comentario" @bind="strObservacion" rows="3" cols="50">
+@* --- El Modal --- *@
+<div class="modal fade" id="registroComprasModal" tabindex="-1" aria-labelledby="registroComprasModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		@* Usar modal-lg para un formulario grande *@
+		<div class="modal-content">			
+			<div class="modal-body">
 				
-				</textarea>
+				@* --- ¡RENDERIZACIÓN CONDICIONAL AQUÍ! --- *@
+                @if (mostrarFormularioModal)
+                {
+                    <FormularioRegistroCompras />
+                }
+                else
+                {
+                    <p>Cargando formulario...</p> 
+                }
+
 
 			</div>
-
-            <div class="col-md-4">
-
-                <!-- Botón Guardar -->
-                <button  class="btn btn-primary" @onclick="() => GuardarTrxProductos()">Guardar</button>
-
-            </div>
-           
-        </div>
-    </div>
+			<div class="modal-footer">				
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="() =>CerrarModal()">Cerrar Modal</button>
+			</div>
+		</div>
+	</div>
 </div>
 
-}
 
 @code {
 
-	private bool mostrarMensaje = false, mesageError=false;
-	private string busquedaProducto = string.Empty;
-	private List<Productos> productos;
-	private List<Productos> productosFiltrados = new();
-	//proveedores
-	private List<Proveedor> proveedores;
-	private List<Proveedor> proveedoresFiltrado = new();
-	private string busquedaProveedor = string.Empty;
-	private Proveedor? proveedorSeleccionado;
-	//
-	private bool mostrarSugerencias=false;
-	private bool mostrarSugerenciasProveedor = false;
-	private bool _cargado = false;
-	private string idUser;
-	private Productos? productoSeleccionado;
-	//trxProductos
-	private string tipoIngreso = "5A90D116-E4E6-4174-9506-314B4DAEBCC0", factura, comprador, strMensajeMostrar,strObservacion;
-	private DateTime fechaCompra;
-	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
-	private TransaccionesProductos newDetalleTrx = new TransaccionesProductos();
-	private List<TransaccionesProductos> listDetalleTrx = new List<TransaccionesProductos>();
-	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
-	//negocio
+	private string idUser, searchTerm;
 	private int negocioId;
-	private bool isCargando = false; // <- bandera para mostrar el spinner
-
+	private string ModalId = "registroComprasModal"; // ID del modal para JS
+	private bool mostrarFormularioModal = false; // <-- ¡La bandera clave! Inicialmente false.
+	private List<CabeceraCompra> compras = new List<CabeceraCompra>();
 
 	protected override async Task OnInitializedAsync()
 	{		
 
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+		//se recupera el negocio por el usuario logeado
+		negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
+
+		compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(negocioId);
+
+
+	}
+
+	private async void AgregarCompra()
+	{
+
+		try
+		{
+			mostrarFormularioModal = true;
+			// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario
+			StateHasChanged(); // Esto es importante par
+
+			await JSRuntime.InvokeVoidAsync("modalHandler.showModal", ModalId);
+
+
+
+
+		} catch (Exception ex)
+		{
 			
-
 			
-
-			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-			var user = authState.User;
-			idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-			//se recupera el negocio por el usuario logeado
+		}
 
 
-			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;			
+	}
 
+	private async void CerrarModal()
+	{
 
-			productos = await productoServices.getAllProductosAsync();
-			proveedores = await proveedorService.getAllProveedorAsync(negocioId);
-
-
-			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
-			//Para que cargue solo transacciones de ingreso
-			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo>0).ToList();
-
-			isCargando = false;
-
+		//await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 		
 
 	}
 
-	private async  void  SeleccionarProducto(Productos producto)
-	{
-		productoSeleccionado = producto;
-		busquedaProducto = producto.adpro_descripcion;
-		await CargarDetalle(producto);
-
-
-		mostrarSugerencias = false;
-	}
-
-
-	private void FiltrarProductos(string busqueda)
-	{
-		if (string.IsNullOrWhiteSpace(busqueda))
-		{
-			productosFiltrados.Clear();
-			mostrarSugerencias = false;
-			return;
-		}
-
-		productosFiltrados = productos
-			.Where(p => p.adpro_descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-			.ToList();
-
-		mostrarSugerencias = productosFiltrados.Any();
-	}
-
-	//proveedores
-	private void SeleccionarProveedor(Proveedor proveedor)
-	{
-		proveedorSeleccionado = proveedor;
-		busquedaProveedor = proveedor.adprv_nombre;
-		mostrarSugerenciasProveedor = false;
-	}
-
-	private void FiltrarProveedor(string busqueda)
-	{
-		if (string.IsNullOrWhiteSpace(busqueda))
-		{
-			proveedoresFiltrado.Clear();
-			mostrarSugerenciasProveedor = false;
-			return;
-		}
-
-		proveedoresFiltrado = proveedores
-			.Where(p => p.adprv_nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-			.ToList();
-
-		mostrarSugerenciasProveedor = proveedoresFiltrado.Any();
-	}
-
-	private async Task<int> CargarDetalle(Productos producto)
-	{
-		try
-		{
-			//se valida que se haya seleccionado un tipo de trx
-			if (tipoIngreso.Equals("seleccionar"))
-			{
-				mesageError = true;
-				strMensajeMostrar = "Se debe selecionar tipo transaccion!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				return 0;
-			}
-
-			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR			
-			if (proveedorSeleccionado != null)
-			{
-				newDetalleTrx = new TransaccionesProductos();
-				//detalles cabecera
-				newDetalleTrx.adbu_code = negocioId;
-				newDetalleTrx.adkpr_userupdate = idUser;
-				newDetalleTrx.adkpr_factura = factura;
-				newDetalleTrx.adkpr_comprador = comprador;
-				newDetalleTrx.adprv_codigo = proveedorSeleccionado.adprv_codigo;
-				newDetalleTrx.adkpr_fecha = fechaCompra;
-				newDetalleTrx.adtr_codigo = Guid.Parse(tipoIngreso);
-				newDetalleTrx.adkpr_datecreated = DateTime.Now;
-				newDetalleTrx.adpro_codigo = producto.adpro_codigo;
-				newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
-				newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;
-				newDetalleTrx.adkpr_precio_iva = newDetalleTrx.adkpr_precio_unitario * decimal.Parse("0.15");
-				newDetalleTrx.adkpr_observacion = strObservacion;
-
-				listDetalleTrx.Add(newDetalleTrx);
-
-
-				return 1;
-
-			}
-			else
-			{
-				mesageError = true;
-				strMensajeMostrar = "No se ha seleccionado proveedor!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				return 0;
-
-
-			}
-
-
-
-
-
-		} catch (Exception ex)
-		{
-			Console.WriteLine(ex.Message);
-			return 0;
-
-		}
-
-	}
-
-	private void EliminarDetalle(TransaccionesProductos detalleEliminar)
-	{
-		listDetalleTrx.Remove(detalleEliminar);
-
-	}
-
-	private void ActualizarTotales(TransaccionesProductos trxDetalleAct)
-	{
-		trxDetalleAct.adkpr_precio_total = trxDetalleAct.adkpr_cantidad * (trxDetalleAct.adkpr_precio_unitario + trxDetalleAct.adkpr_precio_iva);
-
-	}
-
-	private async void GuardarTrxProductos()
-	{
-		try
-		{
-			if (listDetalleTrx.Count > 0)
-			{
-
-				await trxProductos.GuardarLista(listDetalleTrx);
-
-				mostrarMensaje = true;
-				//Navigation.NavigateTo("/clientes");
-				StateHasChanged();
-				listDetalleTrx.Clear();
-
-				//una vez se guardado se envia a limpiar
-				busquedaProveedor = string.Empty;
-				busquedaProducto = string.Empty;
-				comprador = string.Empty;
-				factura = string.Empty;
-				strObservacion = string.Empty;
-
-				await Task.Delay(1000);
-				mostrarMensaje = false;
-				StateHasChanged();
-
-
-			}
-			else
-			{
-				mesageError = true;
-				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				
-			}
-
-
-
-		} catch (Exception ex)
-		{
-			mesageError = true;
-			strMensajeMostrar = ex.Message;
-
-			await Task.Delay(1000);
-			mesageError = false;
-			StateHasChanged();
-
-		}
-
-	
-	}
-
-
+	private IEnumerable<CabeceraCompra> FiltrarCompras =>
+		compras.Where(compra => string.IsNullOrEmpty(searchTerm) || compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) );
 
 }
