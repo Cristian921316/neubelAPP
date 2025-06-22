@@ -49,3 +49,21 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* Estilos para reducir la altura de las filas en la tabla de compras */
+.table-compras td {
+    padding-top: 0.20rem; /* Reduce el padding superior */
+    padding-bottom: 0.20rem; /* Reduce el padding inferior */
+    /* Ajusta estos valores según lo compacto que quieras que sea */
+}
+
+/* Opcional: También puedes ajustar el line-height para comprimir el texto verticalmente */
+.table-compras {
+    line-height: 1; /* Valor para líneas de texto muy juntas, o 1.2 para un poco más de espacio */
+}
+
+    /* Si los botones son demasiado grandes, puedes hacerlos más pequeños también */
+    .table-compras .btn {
+        padding: 0.1rem 0.3rem; /* Padding más pequeño para botones */
+        font-size: 0.75rem; /* Fuente más pequeña para botones */
+    }

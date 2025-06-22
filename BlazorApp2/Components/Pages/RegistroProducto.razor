@@ -8,6 +8,7 @@
 @inject ServiceClientes ClienteService
 @inject NegocioService serviceNegocio
 @inject ProductoServices productoServices
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -115,18 +116,17 @@
     private Productos productosSave = new Productos();
 
     private string idUser;
+    private int idNegocio;
 
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
-
-
-       
+        var userClaims = user.Identities.First().Claims.ToList();
+        idUser = userClaims[0].Value;
+        idNegocio = serviceUser.getIdNegocioByUser(idUser);
+        
 
         if (ProductoId.HasValue)
         {
@@ -146,7 +146,7 @@
     {
         try
         {
-            productosSave.adbu_code = negocio.adbu_code;
+            productosSave.adbu_code = idNegocio;
             productosSave.adpro_userupdate = idUser;
 
 

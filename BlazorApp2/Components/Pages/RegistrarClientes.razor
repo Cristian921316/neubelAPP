@@ -7,6 +7,7 @@
 @rendermode InteractiveServer
 @inject ServiceClientes ClienteService
 @inject NegocioService serviceNegocio
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -76,19 +77,19 @@
     public int? ClienteId { get; set; }
 
     private Clientes nuevoCliente = new Clientes();  
-    private bool mostrarMensaje = false,guardarOK=true;
-    private ServiceClientes serviceClientes;
-    private Negocio negocio;
+    private bool mostrarMensaje = false,guardarOK=true;    
     private string idUser;
+    private int idNegocio;
 
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+        var userClaims = user.Identities.First().Claims.ToList();
+        idUser = userClaims[0].Value;
+        idNegocio = serviceUser.getIdNegocioByUser(idUser);
+       
 
 
         if (ClienteId.HasValue)
@@ -102,11 +103,7 @@
                 NavigationManager.NavigateTo("/clientes");
             }
         }
-        else //se trata de un nuevo cliente
-        {
-            // nuevoCliente = new Clientes();
-
-        }
+        
     }
 
 
@@ -115,7 +112,7 @@
     {
         try
         {
-            nuevoCliente.adbu_code = negocio.adbu_code;
+            nuevoCliente.adbu_code = idNegocio;
             nuevoCliente.adus_code = idUser;
 
 

@@ -29,7 +29,23 @@ namespace BlazorApp2.Services
 
 		}
 
-		public async Task<bool> guardarCabeceraCompra(CabeceraCompra compra, bool guardarOK)
+        public async Task<CabeceraCompra> getbyId(Guid id)
+        {
+
+            try
+            {
+                return await _context.CabeceraCompras.Where(c => c.adcom_codigo == id).AsNoTracking().FirstOrDefaultAsync();
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+        }
+
+        public async Task<bool> guardarCabeceraCompra(CabeceraCompra compra, bool guardarOK)
 		{
 			try
 			{

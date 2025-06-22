@@ -36,10 +36,10 @@ namespace BlazorApp2.Models
 		public decimal adtc_precioUnitario { get; set; }
 
 		[Column("ADTC_PRECIO_TOTAL")]
-		public decimal? adtc_precio_total { get; set; }
+		public decimal adtc_precio_total { get; set; }
 
 		[Column("ADTC_IVA")]
-		public decimal? adtc_iva { get; set; }
+		public decimal adtc_iva { get; set; }
 
 		[Column("ADTC_ICE")]
 		public decimal? adtc_ice { get; set; }

@@ -13,10 +13,10 @@
 
 <h2>PRODUCTOS</h2>
 
-@if (mostrarMensaje)
+@if (mesageError)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Producto registrado con éxito.
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @strMensajeMostrar
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
@@ -114,10 +114,11 @@ else
 
     // Aquí debes declarar la variable
     private List<Productos> productos;
-    private string searchTerm = string.Empty;
+    private string searchTerm = string.Empty, strMensajeMostrar = string.Empty;
     private Negocio negocio;
 
-    private bool mostrarMensaje = false, guardarOK = true;
+
+    private bool mesageError = false, guardarOK = true;
 
     //objeto productos a guardar
     private Productos productosSave = new Productos();
@@ -139,12 +140,24 @@ else
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
-
-        if (!productoState.IsDataLoaded)
+        try
         {
-            productoState.Productos = await productoServices.getAllProductosAsyncPage(1, 10,"");
-            productoState.IsDataLoaded = true;
-        }
+            if (!productoState.IsDataLoaded)
+            {
+                productoState.Productos = await productoServices.getAllProductosAsyncPage(1, 10, "");
+                productoState.IsDataLoaded = true;
+            }
+
+        } catch (Exception ex)
+        {
+            mesageError = true;
+            strMensajeMostrar = "[ERROR] "+ex.Message +" CONTACTE CON EL ADMINISTRADOR DEL SISTEMA";
+            StateHasChanged();
+            await Task.Delay(2000);
+            mesageError = false;
+            StateHasChanged();
+
+        }      
         
 
     }
@@ -163,38 +176,7 @@ else
         NavigationManager.NavigateTo($"/RegistrarProductos");
 
     }
-
-    private async Task GuardarProducto()
-    {
-        try
-        {
-            productosSave.adbu_code = negocio.adbu_code;
-            productosSave.adpro_userupdate = idUser;
-
-
-            //se marca como modificado
-
-
-            await productoServices.Guardar(productosSave, guardarOK);
-            mostrarMensaje = true;
-            //Navigation.NavigateTo("/clientes");
-            StateHasChanged();
-             productosSave = new Productos();
-            //si se crea un nuevo cliente se envia la bandera como creacion
-            guardarOK = true;
-            // Desvanecer el mensaje después de 3 segundos
-            await Task.Delay(2000);
-            mostrarMensaje = false;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            // Manejo de errores
-            Console.WriteLine($"Error al guardar el producto: {ex.Message}");
-        }
-    }
-
-
+    
 
     private IEnumerable<Productos> FiltrarProductos =>
          productos.Where(producto => string.IsNullOrEmpty(searchTerm) || producto.adpro_descripcion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) );

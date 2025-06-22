@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject ProveedorServices proveedoresService
 @inject NegocioService serviceNegocio
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
@@ -21,6 +22,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+@if (mesageError)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @strMensajeMostrar
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 
 
 <div class="row">
@@ -157,20 +166,33 @@ else
     private int idNegocio;
     private string ModalId = "exampleModal"; // ID de tu modal
     private Proveedor nuevoProv = new Proveedor();
-    private string idUser;
-    private bool mostrarMensaje=false;
+    private string idUser, strMensajeMostrar= string.Empty;
+    private bool mostrarMensaje = false, mesageError= false;
 
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
-        idNegocio = negocio.adbu_code;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userClaims = user.Identities.First().Claims.ToList();
+            idUser = userClaims[0].Value;
 
-        proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);        
+            idNegocio = serviceUser.getIdNegocioByUser(idUser);
+
+            proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);
+
+        } catch (Exception ex)
+        {
+            mesageError = true;
+            strMensajeMostrar = "[ERROR] " + ex.Message + " CONTACTE CON EL ADMINISTRADOR DEL SISTEMA";
+            StateHasChanged();
+            await Task.Delay(2000);
+            mesageError = false;
+            StateHasChanged();
+            
+        }             
 
 
     }
@@ -188,15 +210,14 @@ else
 
     private async void GuardarProveedor()
     {
-        //NavigationManager.NavigateTo($"/RegistrarProveedor");
-
+       
         await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);        
         nuevoProv.adbu_code = idNegocio;
         nuevoProv.adprv_userupdate = idUser;
         await proveedoresService.GuardarProveedor(nuevoProv,guardaOK);
 
         //se envia a recuperar los registros.
-        proveedores = await proveedoresService.getAllProveedorAsync(idNegocio);
+        proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);
 
         //Actualiza mensj
         mostrarMensaje = true;
@@ -211,7 +232,7 @@ else
 
     private async void EditarProveedor(Guid id)
     {
-        nuevoProv = await proveedoresService.getById(id);
+        nuevoProv = await proveedoresService.getById(id);        
         StateHasChanged();
         // Usa la función JS que gestiona la instancia del modal
         await JSRuntime.InvokeVoidAsync("modalHandler.showModal", ModalId);

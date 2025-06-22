@@ -10,6 +10,7 @@
 @inject TransaccProductoServices serviceTrxProductos
 @inject TipoTrxProductoServices tipoTrx
 @inject ProveedorServices proveedorService
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -233,22 +234,56 @@
 
 			<div class="row">
 
-				<div class="col-md-8">
+				<div class="col-md-6">
 
-					<textarea id="comentario" name="comentario" @bind="cabeceraCompra.adcom_observacion" rows="3" cols="50">
+					<textarea id="comentario" name="comentario" @bind="cabeceraCompra.adcom_observacion" rows="3" cols="40">
 
 					</textarea>
 
 				</div>
 
-				<div class="col-md-4">
 
-					<!-- Botón Guardar -->
-				<button class="btn btn-primary" @onclick="() => GuardarCompra()">Guardar</button>
+			<div class="col-md-6">
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_subtotal" class="form-label mb-0 text-md-end">Subtotal:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_subtotal" class="form-control text-end" @bind="cabeceraCompra.adcom_subtotal" disabled />
+					</div>
+				</div>
 
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_iva" class="form-label mb-0 text-md-end">IVA:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_iva" class="form-control text-end" @bind="cabeceraCompra.adcom_iva" disabled />
+					</div>
+				</div>
+
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_total" class="form-label mb-0 text-md-end">Total:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_total" class="form-control text-end" @bind="cabeceraCompra.adcom_total" disabled />
+					</div>
 				</div>
 
 			</div>
+			
+			<div class="col-md-4">
+
+				<!-- Botón Guardar -->
+				<button class="btn btn-primary" @onclick="() => GuardarCompra()">Guardar</button>
+
+			</div>
+
+
+			</div>
+
+
 		</div>
 	</div>
 
@@ -287,16 +322,18 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+
 		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
-		idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-		//se recupera el negocio por el usuario logeado
+		var userClaims = user.Identities.First().Claims.ToList();
+		idUser = userClaims[0].Value;
+		negocioId = serviceUser.getIdNegocioByUser(idUser);
+
 		cabeceraCompra = new CabeceraCompra();
 
-		negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
+
 
 		cabeceraCompra.adbu_code = negocioId;
-
 		productos = await productoServices.getAllProductosAsync();
 		proveedores = await proveedorService.getAllProveedorAsync(negocioId);
 
@@ -362,6 +399,7 @@
 	}
 
 	private async Task<int> CargarDetalle(Productos producto)
+
 	{
 		try
 		{
@@ -380,17 +418,36 @@
 			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR
 			if (proveedorSeleccionado != null)
 			{
-				newDetalleTrx = new DetalleCompra();	
-				newDetalleTrx.adpro_nombre = producto.adpro_descripcion;
-				newDetalleTrx.adpro_codigo = producto.adpro_codigo;				
-				newDetalleTrx.adtc_precioUnitario = producto.adpro_valor;
-				newDetalleTrx.adtc_iva = newDetalleTrx.adtc_precioUnitario * decimal.Parse("0.15");
+				//no debe existir el producto
+				if (findProduct(producto.adpro_codigo))
+				{
+					mesageError = true;
+					strMensajeMostrar = "El producto ya se encuentra en el detalle";
+
+					await Task.Delay(1000);
+					mesageError = false;
+					StateHasChanged();
+					return 0;
+
+				}
+				else
+				{
+					newDetalleTrx = new DetalleCompra();
+					newDetalleTrx.adpro_nombre = producto.adpro_descripcion;
+					newDetalleTrx.adpro_codigo = producto.adpro_codigo;
+					newDetalleTrx.adtc_precioUnitario = producto.adpro_valor;
+					newDetalleTrx.adtc_iva = newDetalleTrx.adtc_precioUnitario * decimal.Parse("0.15");
 
 
-				listDetalleTrx.Add(newDetalleTrx);
+					listDetalleTrx.Add(newDetalleTrx);
 
 
-				return 1;
+					return 1;
+					
+				}
+
+
+				
 
 			}
 			else
@@ -407,9 +464,6 @@
 			}
 
 
-
-
-
 		}
 		catch (Exception ex)
 		{
@@ -420,15 +474,59 @@
 
 	}
 
+	private bool findProduct(Guid adproCodigo)
+	{
+		bool find = false;
+
+		foreach (var detalle in listDetalleTrx)
+		{
+			if (adproCodigo.Equals(detalle.adpro_codigo)) find = true;
+		}
+
+
+		return find;
+
+	}
+
 	private void EliminarDetalle(DetalleCompra detalleEliminar)
 	{
 		listDetalleTrx.Remove(detalleEliminar);
+
+		if (listDetalleTrx.Count > 0)
+
+		{
+
+			foreach (var detalle in listDetalleTrx)
+			{
+				cabeceraCompra.adcom_subtotal += detalle.adtc_precioUnitario;
+				cabeceraCompra.adcom_iva += detalle.adtc_iva;
+				cabeceraCompra.adcom_total += detalle.adtc_precio_total;
+			}
+
+		}
+		else
+		{
+			cabeceraCompra.adcom_subtotal = decimal.Parse("0.00");
+			cabeceraCompra.adcom_iva = decimal.Parse("0.00");
+			cabeceraCompra.adcom_total = decimal.Parse("0.00");
+			
+		}
+
+
 
 	}
 
 	private void ActualizarTotales(DetalleCompra trxDetalleAct)
 	{
 		trxDetalleAct.adtc_precio_total = trxDetalleAct.adtc_cantidad * (trxDetalleAct.adtc_precioUnitario + trxDetalleAct.adtc_iva);
+
+		//se recorre para el calculo 
+		foreach (var detalle in listDetalleTrx)
+		{
+			cabeceraCompra.adcom_subtotal += detalle.adtc_precioUnitario;
+			cabeceraCompra.adcom_iva += detalle.adtc_iva;
+			cabeceraCompra.adcom_total += detalle.adtc_precio_total;
+		}
 
 	}
 
@@ -474,12 +572,12 @@
 			{
 				await OnFormSubmitted.InvokeAsync(false); // Pasar 'true' indica éxito
 
-				/*mesageError = true;
+				mesageError = true;
 				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
 
 				await Task.Delay(1000);
 				mesageError = false;
-				StateHasChanged();*/
+				StateHasChanged();
 
 			}
 

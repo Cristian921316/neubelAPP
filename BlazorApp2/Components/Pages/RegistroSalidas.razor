@@ -8,6 +8,7 @@
 @inject TransaccProductoServices trxProductos
 @inject TipoTrxProductoServices tipoTrx
 @inject ServiceClientes clienteService
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -269,7 +270,7 @@
 	private List<TransaccionesProductos> listDetalleTrx = new List<TransaccionesProductos>();
 	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
 	//negocio
-	private int negocioId;
+	private int idNegocio;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -279,14 +280,14 @@
 
 			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 			var user = authState.User;
-			idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-			//se recupera el negocio por el usuario logeado
-			comprador = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+			var userClaims = user.Identities.First().Claims.ToList();
+			idUser = userClaims[0].Value;
 
-			negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
+			idNegocio = serviceUser.getIdNegocioByUser(idUser);
+
 
 			productos = await productoServices.getAllProductosCompraAsync();
-			clientes = await clienteService.GetClientesAsyncSalida(negocioId);
+			clientes = await clienteService.GetClientesAsyncSalida(idNegocio);
 			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso
 			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo<0).ToList();
@@ -379,7 +380,7 @@
 			{
 				newDetalleTrx = new TransaccionesProductos();
 				//detalles cabecera
-				newDetalleTrx.adbu_code = negocioId;
+				newDetalleTrx.adbu_code = idNegocio;
 				newDetalleTrx.adkpr_userupdate = idUser;
 				newDetalleTrx.adkpr_factura = factura;
 				newDetalleTrx.adkpr_comprador = comprador;

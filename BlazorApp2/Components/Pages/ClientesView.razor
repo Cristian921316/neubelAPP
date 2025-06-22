@@ -5,6 +5,7 @@
 @rendermode InteractiveServer
 @inject ServiceClientes ClienteService
 @inject NegocioService serviceNegocio
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
@@ -106,17 +107,28 @@ else
     // Aquí debes declarar la variable
     private List<Clientes> clientes;
     private string searchTerm = string.Empty;
-    private Negocio negocio;    
+    private Negocio negocio;
+    private int idNegocio = 5;
 
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        //se recupera el negocio por el usuario logeado
-        negocio = await serviceNegocio.getByUser(user.Identity.Name);
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userClaims = user.Identities.First().Claims.ToList();
+            
+            idNegocio = serviceUser.getIdNegocioByUser(userClaims[0].Value);
+            clientes = await ClienteService.GetClientesAsyncPage(idNegocio);
 
-        clientes = await ClienteService.GetClientesAsyncPage(negocio.adbu_code);
+        } catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+
+        }
+
+        
         
     }
 

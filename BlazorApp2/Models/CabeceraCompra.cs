@@ -26,7 +26,7 @@ ADCOM_DATEUPDATE*/
 		public int adbu_code { get; set; }
 
 		[Column("ADCOM_COMPRADOR")]
-		public string adcom_comprador { get; set; }
+		public string? adcom_comprador { get; set; }
 
 		[Column("ADTR_CODIGO")]
 		public Guid adtr_codigo { get; set; }
@@ -54,6 +54,18 @@ ADCOM_DATEUPDATE*/
 
 		[Column("ADCOM_DATEUPDATE")]
 		public DateTime? adcom_dateupdate { get; set; }
+
+
+		[Column("ADCOM_SUBTOTAL")]
+		public decimal adcom_subtotal { get; set; }
+
+
+		[Column("ADCOM_IVA")]
+		public decimal adcom_iva { get; set; }
+
+
+		[Column("ADCOM_TOTAL")]
+		public decimal adcom_total { get; set; }
 
 	}
 }

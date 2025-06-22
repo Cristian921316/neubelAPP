@@ -46,7 +46,7 @@ namespace BlazorApp2.Services
 
             try
             {
-                return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).Take(10).ToListAsync();
+                return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).OrderByDescending(p => p.adprv_datecreated).Take(10).ToListAsync();
 
 
             }

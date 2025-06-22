@@ -7,8 +7,10 @@
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
 @inject ServiceCabeceraCompra serviceCabeceraCompra
+@inject ServiceDetalleCompra serviceDetalleCompra
 @inject TipoTrxProductoServices tipoTrx
 @inject ProveedorServices proveedorService
+@inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
@@ -41,7 +43,7 @@
 	<div class="border p-4 rounded">
 
 		<div class="table-responsive">
-			<table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
+			<table class="table table-striped table-bordered table-hover table-compras" style="font-size: 10px;">
 				<thead>
 					<tr>
 						<th>FACTURA</th>
@@ -62,7 +64,7 @@
 							<td>@compra.adcom_dateCreated</td>
 							<td>
 								<!-- Botón de editar -->
-								<button class="btn btn-success btn-sm">
+								<button class="btn btn-success btn-sm" @onclick="() => VisualizarCompra(compra)">
 									<i class="fa-regular fa-eye"></i>
 								</button>
 
@@ -78,11 +80,17 @@
 	</div>
 </div>
 
-@* --- El Modal --- *@
+@* --- El Modal Registro --- *@
 <div class="modal fade" id="registroComprasModal" tabindex="-1" aria-labelledby="registroComprasModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-xl">
 		@* Usar modal-lg para un formulario grande *@
-		<div class="modal-content">			
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="exampleModalLabel">Registrar</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" @onclick="() => CerrarModalView()"  aria-label=" Cerrar"></button>
+			</div>
+
 			<div class="modal-body">
 				
 				@* --- ¡RENDERIZACIÓN CONDICIONAL AQUÍ! --- *@
@@ -96,22 +104,165 @@
                 }
 
 
-			</div>
-			<div class="modal-footer">				
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="() =>CerrarModal()">Cerrar Modal</button>
+			</div>			
+		</div>
+	</div>
+</div>
+
+@* --- El Modal lectura --- *@
+<div class="modal fade" id="compraLectura" tabindex="-1" aria-labelledby="compraLecturaLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		@* Usar modal-lg para un formulario grande *@
+		<div class="modal-content">			
+
+			<div class="modal-body">
+
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">Informacion Compra</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="container mt-4">
+
+
+					<div class="card mb-4">
+
+						<div class="card-body">
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label for="factura" class="form-label">Factura</label>
+									<input type="text" id="factura" class="form-control" @bind="_factura" disabled>
+								</div>
+								<div class="col-md-6">
+									<label for="comprador" class="form-label">Comprador</label>
+									<input type="text" id="comprador" class="form-control" @bind="_comprador" disabled>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label for="registro" class="form-label">Fecha de Registro</label>
+									<input type="date" id="registro" class="form-control" @bind="_registro" disabled>
+								</div>
+								<div class="col-md-6">
+									<label for="proveedor" class="form-label">Proveedor</label>
+									<input type="text" id="proveedor" class="form-control"  disabled>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-header">
+							Detalle de Productos
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-striped table-bordered">
+									<thead>
+										<tr>
+											<th>Producto</th>
+											<th>Cantidad</th>
+											<th>Precio Unitario</th>
+											<th>Iva</th>
+											<th>Total</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var trxDetalle in detalles)
+										{
+											<tr>
+
+												<td>@trxDetalle.adpro_nombre</td>
+												<td>@trxDetalle.adtc_cantidad</td>
+												<td>@trxDetalle.adtc_precioUnitario</td>
+												<td>@trxDetalle.adtc_iva</td>
+												<td>@trxDetalle.adtc_precio_total</td>
+
+											</tr>
+										}
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div class="container mt-5">
+						<div class="border p-4 rounded">
+
+							<div class="row">								
+
+								<div class="col-md-6">
+								</div>
+
+								<div class="col-md-6">
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_subtotal" class="form-label mb-0 text-md-end">Subtotal:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_subtotal" class="form-control text-end" @bind="_subtotal" disabled />
+										</div>
+									</div>
+
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_iva" class="form-label mb-0 text-md-end">IVA:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_iva" class="form-control text-end" @bind="_iva" disabled />
+										</div>
+									</div>
+
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_total" class="form-label mb-0 text-md-end">Total:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_total" class="form-control text-end" @bind="_total" disabled />
+										</div>
+									</div>
+
+								</div>
+
+								
+
+
+							</div>
+
+
+						</div>
+					</div>
+
+
+
+				</div>
+
+		
+
+
 			</div>
 		</div>
 	</div>
 </div>
 
 
+
+
 @code {
 
-	private string idUser, searchTerm;
+	private string idUser, searchTerm = string.Empty;
 	private int negocioId;
 	private string ModalId = "registroComprasModal"; // ID del modal para JS
-	private bool mostrarFormularioModal = false; // <-- ¡La bandera clave! Inicialmente false.
+	private string modalLectura = "compraLectura";
+	private bool mostrarFormularioModal = false, mostrarCompraLectura = false; // <-- ¡La bandera clave! Inicialmente false.
 	private List<CabeceraCompra> compras = new List<CabeceraCompra>();
+	private List<DetalleCompra> detalles = new List<DetalleCompra>();
+	Guid _idCompra = Guid.Empty;
+	private string _factura, _comprador, _observacion;
+	private int idNegocio = 5; //valor por defecto
+	DateTime? _registro;
+	private decimal _subtotal, _iva, _total;
 
 	protected override async Task OnInitializedAsync()
 	{		
@@ -119,11 +270,12 @@
 
 		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
-		idUser = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-		//se recupera el negocio por el usuario logeado
-		negocioId = serviceNegocio.getByUserVoid(user.Identity.Name).adbu_code;
+		var userClaims = user.Identities.First().Claims.ToList();
+		idUser = userClaims[0].Value;
 
-		compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(negocioId);
+		idNegocio = serviceUser.getIdNegocioByUser(idUser);
+
+		compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(idNegocio);
 
 
 	}
@@ -151,11 +303,34 @@
 
 	}
 
-	private async void CerrarModal()
+	private async void VisualizarCompra(CabeceraCompra compra)
+	{
+		_idCompra = compra.adcom_codigo;
+		_factura = compra.adcom_factura;
+		_comprador = compra.adcom_comprador;
+		_observacion = compra.adcom_observacion;
+		_registro = compra.adcom_dateCreated;
+		_subtotal = compra.adcom_subtotal;
+		_iva = compra.adcom_iva;
+		_total = compra.adcom_total;
+		detalles = await serviceDetalleCompra.GetDetalleComprasAsync(compra.adcom_codigo);
+		
+		mostrarCompraLectura = true;
+		// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario	
+		StateHasChanged(); 
+		await JSRuntime.InvokeVoidAsync("modalHandler.showModal", modalLectura);
+		
+
+
+	}
+
+	private async void CerrarModalView()
 	{
 
-		//await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
-
+		mostrarCompraLectura = false;
+		StateHasChanged();
+		await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", modalLectura);
+		
 
 	}
 
@@ -169,7 +344,7 @@
 			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
 			//Se envia actualizar las compras
-			compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(negocioId);
+			compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(idNegocio);
 
 			mostrarFormularioModal = false;
 			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
@@ -186,6 +361,6 @@
 
 
 	private IEnumerable<CabeceraCompra> FiltrarCompras =>
-		compras.Where(compra => string.IsNullOrEmpty(searchTerm) || compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) );
+		compras.Where(compra => string.IsNullOrEmpty(searchTerm) || compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || compra.adcom_comprador.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
 }

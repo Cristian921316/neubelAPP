@@ -19,7 +19,7 @@ namespace BlazorApp2.Services
 
 			try
 			{
-				return await _context.DetalleCompras.Where(c => c.adcom_codigo == cabeceraCompra).AsNoTracking().ToListAsync();
+				return await _context.DetalleCompras.Where(c => c.adcom_codigo == cabeceraCompra).ToListAsync();
 
 			}
 			catch (Exception ex)
