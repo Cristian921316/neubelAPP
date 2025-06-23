@@ -33,7 +33,7 @@
 
 		public async Task<List<Clientes>> GetClientesAsyncPage(int idNegocio)
         {
-            return await _context.Clientes.Where(c => c.adbu_code == idNegocio).Take(10).ToListAsync();
+            return await _context.Clientes.Where(c => c.adbu_code == idNegocio).OrderByDescending(c => c.adcu_datecreated).Take(10).ToListAsync();
 
         }
 
