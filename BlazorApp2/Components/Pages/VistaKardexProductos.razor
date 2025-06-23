@@ -1,0 +1,178 @@
+﻿@page "/movimientosProductos"
+@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@inject ProductoServices productoServices
+@inject NegocioService serviceNegocio
+@inject TransaccProductoServices serviceTrx
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject ProductoState productoState
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>Productos</PageTitle>
+
+<h2>PRODUCTOS</h2>
+
+@if (mesageError)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @strMensajeMostrar
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+
+
+
+<div class="container mt-5">
+
+
+    <div class="row">
+
+        <div class="col-9">
+
+
+
+
+            <InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
+            <ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
+                @foreach (var producto in productosFiltrados)
+                {
+                    <ComponentModel @key="producto.adpro_codigo" Producto="producto" />
+
+                    <li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
+                        @producto.adpro_descripcion
+                    </li>
+                }
+            </ul>
+
+
+        </div>
+
+        <div class="col-3">
+            <input type="text" class="form-control" aria-describedby="addon-wrapping" @bind="stockActual" disabled />
+        </div>
+
+    </div>
+
+    @if (productos == null || !productos.Any())
+    {
+        <p>Cargando productos...</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th>TIPO TRANSACCION</th>
+                        <th>COD-PRODUCTO</th>
+                        <th>DESCRIPCION</th>
+                        <th>CANTIDAD</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var producto in vistaKardex)
+                    {
+                        <tr>
+                            <td>@producto.tipoTrx</td>
+                            <td>@producto.codigo</td>
+                            <td>@producto.nombre</td>
+                            <td>@producto.cantidad</td>                            
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+
+    }
+
+    <!--FORMULARIO DE EDICION-->
+
+</div>
+
+
+
+
+
+
+@code {
+
+    // Aquí debes declarar la variable
+    private List<Productos> productos;
+    private List<MovimientosProducto> vistaKardex = new List<MovimientosProducto>();
+    private string searchTerm = string.Empty, strMensajeMostrar = string.Empty;
+    private Negocio negocio;
+
+
+    private bool mesageError = false, guardarOK = true;
+
+
+    private bool _isDataLoaded = false; // <-- ¡Esta es la bandera clave!
+
+    //stock
+    private decimal stockActual=0;
+    private DateTime fechaInicio = DateTime.Now;
+    private DateTime fechaFin = DateTime.Now;
+    private Productos? productoSeleccionado;
+    private string busquedaProducto = string.Empty;
+    private bool mostrarSugerencias = false;
+    private List<Productos> productosFiltrados = new();
+    // Este método se ejecuta cuando el componente se inicializa
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            productos = await productoServices.getAllProductosCompraAsync();
+        }
+        catch (Exception ex)
+        {
+            mesageError = true;
+            strMensajeMostrar = "[ERROR] " + ex.Message + " CONTACTE CON EL ADMINISTRADOR DEL SISTEMA";
+            StateHasChanged();
+            await Task.Delay(2000);
+            mesageError = false;
+            StateHasChanged();
+
+        }
+
+
+    }
+
+    private async void SeleccionarProducto(Productos producto)
+    {
+        productoSeleccionado = producto;
+        busquedaProducto = producto.adpro_descripcion;
+        //        
+        stockActual = productoSeleccionado.adpro_cantidad;
+        vistaKardex = serviceTrx.getVistaKardex("RESUMEN_PRODUCTO", productoSeleccionado.adpro_codigo, fechaInicio, fechaFin);
+        mostrarSugerencias = false;
+       
+    }
+
+
+    private void FiltrarProductos(string busqueda)
+    {
+        if (string.IsNullOrWhiteSpace(busqueda))
+        {
+            productosFiltrados.Clear();
+            mostrarSugerencias = false;
+            return;
+        }
+
+        productosFiltrados = productos
+            .Where(p => p.adpro_descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        mostrarSugerencias = productosFiltrados.Any();
+    }
+
+
+
+}

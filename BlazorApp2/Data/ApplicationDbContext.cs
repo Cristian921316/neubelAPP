@@ -29,6 +29,12 @@ namespace BlazorApp2.Data
 
 		public DbSet<DetalleCompra> DetalleCompras { get; set; }
 
+		public DbSet<CabeceraSalida> CabeceraSalidas { get; set; }
+
+		public DbSet<DetalleSalida> DetalleSalidas { get; set; }
+
+		public DbSet<MovimientosProducto> MovimientosProductos { get; set; }
+
 
 	}
 }

@@ -1,0 +1,623 @@
+﻿@using BlazorApp2.Services
+@using BlazorApp2.Models
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject ProductoServices productoServices
+@inject NegocioService serviceNegocio
+@inject ServiceCabeceraSalida serviceCabeceraSalida
+@inject ServiceDetalleSalida serviceDetalleSalida
+@inject TransaccProductoServices trxServiceProductos
+@inject TipoTrxProductoServices tipoTrx
+@inject ServiceClientes clienteService
+@inject ServiceUserNegocio serviceUser
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>Salidas</PageTitle>
+<!--CABCERA DE COMPRAS-->
+@if (mostrarMensaje)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		Registro realizado con exito.
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+@if (mesageError)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		@strMensajeMostrar
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+
+<div class="container mt-5">
+	<div class="border p-4 rounded">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="row">
+
+							<div class="col-md-6">
+								<label for="nombre" class="form-label">Tipo Ingreso</label>
+							</div>
+							<div class="col-md-6">
+								<select class="form-select" @bind="tipoIngreso">	
+									<option value="seleccionar">--seleccionar--</option>
+									@foreach (var tipo in tipoTrxProductos)
+									{
+										<option value="@tipo.adtr_codigo">@tipo.adtr_nombre</option>
+									}
+								</select>
+							</div>
+
+
+							<div class="col-md-6">
+								<label for="nombre" class="form-label">Guia</label>
+							</div>
+
+							<div class="col-md-6">
+								<input type="text" class="form-control" @bind="cabeceraSalida.AdcsaGuia" placeholder="###-###-#########" aria-describedby="addon-wrapping" />
+							</div>
+
+						</div>
+
+
+
+					</div>
+					<div class="col-md-6">
+						<div class="row">
+
+							<div class="col-md-6">
+								<label for="nombre" class="form-label">Vendedor</label>
+							</div>
+
+							<div class="col-md-6">
+								<input type="text" class="form-control" @bind="cabeceraSalida.AdcsaVendedor" aria-describedby="addon-wrapping" disabled />
+							</div>
+
+
+							<div class="col-md-6">
+								<label for="nombre" class="form-label">Fecha</label>
+							</div>
+
+							<div class="col-md-6">
+								<input type="date" class="form-control" @bind="cabeceraSalida.AdcsaFechaVenta" aria-describedby="addon-wrapping" />
+							</div>
+
+
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--ingreso proveedores-->
+
+		<div class="row">
+			<div class="col-md-3">
+				<label for="nombre" class="form-label">Cliente</label>
+			</div>
+
+			<div class="col-md-9">
+
+				<InputText id="cliente" placeholder="Cliente..." class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
+				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasCliente)">
+					@foreach (var cliente in clientesFiltrado)
+					{
+						<ComponentModel @key="cliente.adcu_code" Cliente="cliente" />
+
+						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
+							@cliente.adcu_name
+						</li>
+					}
+				</ul>
+
+			</div>
+
+
+		</div>
+
+
+	</div>
+</div>
+
+<!--ingreso productos-->
+<div class="container mt-5">
+
+	<div class="row">
+		<div class="col-6">
+
+
+			<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
+			<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
+				@foreach (var producto in productosFiltrados)
+				{
+					<ComponentModel @key="producto.adpro_codigo" Producto="producto" />
+
+					<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
+						@producto.adpro_descripcion
+					</li>
+				}
+			</ul>
+
+
+		</div>
+
+
+
+	</div>
+
+</div>
+<!--DETALLE DE COMPRAS-->
+
+<div class="container mt-5">
+	<div class="border p-4 rounded">
+
+		<div class="table-responsive">
+			<table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
+				<thead>
+					<tr>
+						<th>DESCRIPCION</th>
+						<th>CANTIDAD</th>
+						<th>VALOR</th>
+						<th>IVA</th>
+						<th>TOTAL</th>
+						<th>ELIMINAR</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					@foreach (var trxDetalle in listDetalleTrx)
+					{
+						<tr>
+
+							<td>@trxDetalle.AdproNombre</td>
+
+							<td>
+								<input type="number"
+									   step="0.01"
+									   @bind="trxDetalle.AdtcCantidad"
+									   @bind:event="oninput"
+									   class="form-control form-control-sm"
+									   @onchange="() => ActualizarTotales(trxDetalle)"
+									   min="0" />
+							</td>
+
+							<td>
+								<input type="number"
+									   step="0.01"
+									   @bind="trxDetalle.AdtcPrecioUnitario"
+									   @bind:event="oninput"
+									   @onchange="() => ActualizarTotales(trxDetalle)"
+									   class="form-control form-control-sm"
+									   min="0" />
+							</td>
+
+
+
+							<td>@trxDetalle.AdtcIva</td>
+							<td>@trxDetalle.AdtcPrecioTotal</td>
+
+							<td>
+								<!-- Botón de editar -->
+								<button class="btn btn-success btn-sm" style="padding: 0.1rem 0.3rem; font-size: 0.75rem;" @onclick="() => EliminarDetalle(trxDetalle)">
+									<i class="fas fa-remove"></i>
+								</button>
+
+							</td>
+
+						</tr>
+					}
+
+
+				</tbody>
+			</table>
+		</div>
+
+
+
+	</div>
+</div>
+
+<div class="container mt-5">
+	<div class="border p-4 rounded">
+
+		<div class="row">
+
+			<div class="col-md-6">
+
+				<textarea id="comentario" name="comentario" @bind="cabeceraSalida.Adcsa_observacion" rows="3" cols="40">
+
+					</textarea>
+
+			</div>
+
+
+			<div class="col-md-6">
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_subtotal" class="form-label mb-0 text-md-end">Subtotal:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_subtotal" class="form-control text-end" @bind="cabeceraSalida.AdcsaSubtotal" disabled />
+					</div>
+				</div>
+
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_iva" class="form-label mb-0 text-md-end">IVA:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_iva" class="form-control text-end" @bind="cabeceraSalida.AdcsaIva" disabled />
+					</div>
+				</div>
+
+				<div class="row align-items-center mb-2">
+					<div class="col-md-4">
+						<label for="adcom_total" class="form-label mb-0 text-md-end">Total:</label>
+					</div>
+					<div class="col-md-8">
+						<input type="text" id="adcom_total" class="form-control text-end" @bind="cabeceraSalida.AdcsaTotal" disabled />
+					</div>
+				</div>
+
+			</div>
+
+			<div class="col-md-4">
+
+				<!-- Botón Guardar -->
+				<button class="btn btn-primary" @onclick="() => GuardarSalida()">Guardar</button>
+
+			</div>
+
+
+		</div>
+
+
+	</div>
+</div>
+
+@code {
+
+	private bool mostrarMensaje = false, mesageError = false;
+	private string busquedaProducto = string.Empty;
+	private List<Productos> productos;
+	private List<Productos> productosFiltrados = new();
+	//proveedores
+	private List<Clientes> clientes;
+	private List<Clientes> clientesFiltrado = new();
+	private string busquedaProveedor = string.Empty;
+	private string busquedaCliente = string.Empty;
+	private Clientes? clienteSeleccionado;
+	//
+	private bool mostrarSugerencias = false;
+	private bool mostrarSugerenciasCliente = false;
+	private bool _cargado = false;
+	private string idUser;
+	private Productos? productoSeleccionado;
+	//trxProductos
+	private string tipoIngreso = "seleccionar", factura, comprador, strMensajeMostrar, strObservacion;
+	private DateTime fechaCompra;
+	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
+	private DetalleSalida newDetalleTrx = new DetalleSalida();
+	private List<DetalleSalida> listDetalleTrx = new List<DetalleSalida>();
+	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
+	private CabeceraSalida cabeceraSalida = new CabeceraSalida();
+	//negocio
+	private int idNegocio;
+	private string vendedor;
+
+	[Parameter]
+	public EventCallback<bool> OnFormSubmitted { get; set; } // Este EventCallback notifica al padre
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!_cargado)
+		{
+			_cargado = true;
+
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = authState.User;
+			var userClaims = user.Identities.First().Claims.ToList();
+			idUser = userClaims[0].Value;
+			vendedor = userClaims[1].Value;
+
+			cabeceraSalida.AdcsaVendedor = vendedor;
+
+			idNegocio = serviceUser.getIdNegocioByUser(idUser);
+
+
+			productos = await productoServices.getAllProductosCompraAsync();
+			clientes = await clienteService.GetClientesAsyncSalida(idNegocio);
+			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
+			//Para que cargue solo transacciones de ingreso
+			tipoTrxProductos = tipoTrxProductos.Where(t => t.adtr_signo < 0).ToList();
+
+		}
+
+	}
+
+	private async void SeleccionarProducto(Productos producto)
+	{
+		productoSeleccionado = producto;
+		busquedaProducto = producto.adpro_descripcion;
+		await CargarDetalle(producto);
+
+
+		mostrarSugerencias = false;
+	}
+
+
+	private void FiltrarProductos(string busqueda)
+	{
+		if (string.IsNullOrWhiteSpace(busqueda))
+		{
+			productosFiltrados.Clear();
+			mostrarSugerencias = false;
+			return;
+		}
+
+		productosFiltrados = productos
+			.Where(p => p.adpro_descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+			.ToList();
+
+		mostrarSugerencias = productosFiltrados.Any();
+	}
+
+	//proveedores
+	private void SeleccionarCliente(Clientes cliente)
+	{
+		clienteSeleccionado = cliente;
+		busquedaCliente = cliente.adcu_name;
+		mostrarSugerenciasCliente = false;
+	}
+
+	private void FiltrarClientes(string busqueda)
+	{
+		try
+		{
+			if (string.IsNullOrWhiteSpace(busqueda))
+			{
+				clientesFiltrado.Clear();
+				mostrarSugerenciasCliente = false;
+				return;
+			}
+
+			clientesFiltrado = clientes
+				.Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+
+			mostrarSugerenciasCliente = clientesFiltrado.Any();
+		}
+		catch (Exception ex)
+		{
+			Console.Write(ex.Message);
+
+		}
+
+	}
+
+	private async Task<int> CargarDetalle(Productos producto)
+
+	{
+		try
+		{
+			//se valida que se haya seleccionado un tipo de trx
+			if (tipoIngreso.Equals("seleccionar"))
+			{
+				mesageError = true;
+				strMensajeMostrar = "Se debe selecionar tipo transaccion!";
+
+				await Task.Delay(1000);
+				mesageError = false;
+				StateHasChanged();
+				return 0;
+			}
+
+			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR
+			if (clienteSeleccionado != null)
+			{
+
+				//no debe existir el producto
+				if (findProduct(producto.adpro_codigo))
+				{
+					mesageError = true;
+					strMensajeMostrar = "El producto ya se encuentra en el detalle";
+
+					await Task.Delay(1000);
+					mesageError = false;
+					StateHasChanged();
+					return 0;
+
+				}
+				else
+				{
+					newDetalleTrx = new DetalleSalida();
+					newDetalleTrx.AdproNombre = producto.adpro_descripcion;
+					newDetalleTrx.AdproCodigo = producto.adpro_codigo;
+					newDetalleTrx.AdtcPrecioUnitario = producto.adpro_valor;
+					newDetalleTrx.AdtcIva = newDetalleTrx.AdtcPrecioUnitario * decimal.Parse("0.15");
+					listDetalleTrx.Add(newDetalleTrx);
+
+
+					return 1;
+
+				}
+
+
+
+
+			}
+			else
+			{
+				mesageError = true;
+				strMensajeMostrar = "No se ha seleccionado cliente!";
+
+				await Task.Delay(1000);
+				mesageError = false;
+				StateHasChanged();
+				return 0;
+
+
+			}
+
+
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+			return 0;
+
+		}
+
+	}
+
+	private bool findProduct(Guid adproCodigo)
+	{
+		bool find = false;
+
+		foreach (var detalle in listDetalleTrx)
+		{
+			if (adproCodigo.Equals(detalle.AdproCodigo)) find = true;
+		}
+
+
+		return find;
+
+	}
+
+
+
+
+	private void EliminarDetalle(DetalleSalida detalleEliminar)
+	{
+		listDetalleTrx.Remove(detalleEliminar);
+
+		if (listDetalleTrx.Count > 0)
+
+		{
+
+			foreach (var detalle in listDetalleTrx)
+			{
+				cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioUnitario;
+				cabeceraSalida.AdcsaIva += detalle.AdtcIva;
+				cabeceraSalida.AdcsaTotal += detalle.AdtcPrecioTotal;
+			}
+
+		}
+		else
+		{
+			cabeceraSalida.AdcsaSubtotal = decimal.Parse("0.00");
+			cabeceraSalida.AdcsaIva = decimal.Parse("0.00");
+			cabeceraSalida.AdcsaTotal = decimal.Parse("0.00");
+
+		}
+
+	}
+
+	private async void ActualizarTotales(DetalleSalida trxDetalleAct)
+	{
+		//se valida el stock y que no se ingrese cantidades mayores a la del stock
+		if (trxDetalleAct.AdtcCantidad > productoSeleccionado.adpro_cantidad)
+		{
+			//Se envia eliminar la linea
+			EliminarDetalle(trxDetalleAct);
+
+			mesageError = true;
+			strMensajeMostrar = "La cantidad ingresada supera el stock " + productoSeleccionado.adpro_cantidad;
+
+
+			await Task.Delay(1000);
+			mesageError = false;
+			StateHasChanged();
+			return;
+
+		}
+
+		trxDetalleAct.AdtcPrecioTotal = trxDetalleAct.AdtcCantidad * (trxDetalleAct.AdtcPrecioUnitario + trxDetalleAct.AdtcIva);
+		//se recorre para el calculo
+		foreach (var detalle in listDetalleTrx)
+		{
+			cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioUnitario;
+			cabeceraSalida.AdcsaIva += detalle.AdtcIva;
+			cabeceraSalida.AdcsaTotal += detalle.AdtcPrecioTotal;
+		}
+
+	}
+
+	private async void GuardarSalida()
+	{
+		try
+		{
+			if (listDetalleTrx.Count > 0)
+			{
+
+				//se debe enviar a guardar primeramente la cabecera
+				cabeceraSalida.AdcsaUserUpdate = idUser;
+				cabeceraSalida.AdtrCodigo = Guid.Parse(tipoIngreso);
+				cabeceraSalida.AdcuCode = clienteSeleccionado.adcu_code;
+				await serviceCabeceraSalida.saveCabeceraSalida(cabeceraSalida, true);
+
+				//una vez guardado la cabecera se setea el detalle con la clave de la cabecera
+				for (int i = 0; i < listDetalleTrx.Count; i++)
+				{
+					listDetalleTrx[i].AdcsaCodigo = cabeceraSalida.AdcsaCodigo;
+
+				}
+				//se guarda detalle
+				await serviceDetalleSalida.saveDetalleSalida(listDetalleTrx, true);
+
+				//se realiza la actualizacion sobre el producto e insert transaccional
+				await trxServiceProductos.InsertUpdateTrxProducts("SALIDA", cabeceraSalida.AdcsaCodigo);
+
+				//se setea las listas y la cabecera
+				cabeceraSalida = new CabeceraSalida();
+				listDetalleTrx.Clear();
+
+				//Si todo es exitoso se envia a cerrar pasandole el exito o fracaso al padre.
+				await OnFormSubmitted.InvokeAsync(true); // Pasar 'true' indica éxito
+
+				/*mostrarMensaje = true;
+				strMensajeMostrar = "Registrado con exito!";
+				await Task.Delay(1000);
+				mostrarMensaje = false;
+				StateHasChanged();*/
+
+
+			}
+			else
+			{
+				await OnFormSubmitted.InvokeAsync(false); // Pasar 'true' indica éxito
+
+				mesageError = true;
+				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
+
+				await Task.Delay(1000);
+				mesageError = false;
+				StateHasChanged();
+
+			}
+
+
+
+		}
+		catch (Exception ex)
+		{
+			mesageError = true;
+			strMensajeMostrar = ex.Message;
+
+			await Task.Delay(1000);
+			mesageError = false;
+			StateHasChanged();
+
+		}
+
+
+	}
+
+
+
+}

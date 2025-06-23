@@ -5,208 +5,66 @@
 @rendermode InteractiveServer
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
-@inject TransaccProductoServices trxProductos
+@inject ServiceCabeceraSalida sertviceCabeceraSalida
 @inject TipoTrxProductoServices tipoTrx
 @inject ServiceClientes clienteService
 @inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Salidas</PageTitle>
-<!--CABCERA DE COMPRAS-->
-@if (mostrarMensaje)
-{
-	<div class="alert alert-success alert-dismissible fade show" role="alert">
-		Registro realizado con exito.
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
-@if (mesageError)
-{
-	<div class="alert alert-danger alert-dismissible fade show" role="alert">
-		@strMensajeMostrar
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
 
-<div class="container mt-5">
-	<div class="border p-4 rounded">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="row">
-				<div class="col-md-6">
-					<div class="row">
+<div class="row">
 
-                        <div class="col-md-6">
-                            <label for="nombre" class="form-label">Tipo Ingreso</label>
-                        </div>
-                        <div class="col-md-6">
-								<select class="form-select" @bind="tipoIngreso">
-									<option value="seleccionar">--Seleccionar--</option>
-									@foreach (var tipo in tipoTrxProductos)
-									{
-										<option value="@tipo.adtr_codigo">@tipo.adtr_nombre</option>
-									}
-                            </select>
-                        </div>
-
-						
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Guia</label>
-						</div>
-
-						<div class="col-md-6">
-								<input type="text" class="form-control" @bind="factura" placeholder="###-###-#########" aria-describedby="addon-wrapping" />
-						</div>					
-
-					</div>
-
-					
-
-				</div>
-				<div class="col-md-6">
-					<div class="row">
-						
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Vendedor</label>
-						</div>
-
-						<div class="col-md-6">
-								<input type="text" class="form-control" @bind="comprador" aria-describedby="addon-wrapping" disabled/>
-						</div>
-												
-
-						<div class="col-md-6">
-							<label for="nombre" class="form-label">Fecha</label>
-						</div>
-
-						<div class="col-md-6">
-								<input type="date" class="form-control" @bind="fechaCompra" aria-describedby="addon-wrapping" />
-						</div>					
-
-
-					</div>
-
-						
-				</div>
-			</div>
+	<div class="col-9">
+		<div class="input-group flex-nowrap">
+			<span class="input-group-text" id="addon-wrapping">Buscar</span>
+			<input type="text" class="form-control" placeholder="Por factura,proveedor" aria-describedby="addon-wrapping" @bind="searchTerm" />
 		</div>
 	</div>
-		<!--ingreso proveedores-->
 
-		<div class="row">
-			<div class="col-md-3">
-				<label for="nombre" class="form-label">Cliente</label>
-			</div>
-
-			<div class="col-md-9">
-
-				<InputText id="cliente" placeholder="Cliente..." class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
-				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasCliente)">
-					@foreach (var cliente in clientesFiltrado)
-					{
-						<ComponentModel @key="cliente.adcu_code" Cliente="cliente" />
-
-						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(cliente)">
-							@cliente.adcu_name
-						</li>
-					}
-				</ul>
-
-			</div>
-
-
-		</div>
-
+	<div class="col-3">
+		<button class="btn btn-primary  mb-0 me-2" @onclick="AgregarSalida">
+			<i class="bi bi-file-earmark-arrow-down me-2"></i>
+			Agregar
+		</button>
+	</div>
 
 </div>
-</div>
 
-<!--ingreso productos-->
-<div class="container mt-5">
-
-    <div class="row">
-        <div class="col-6">            
-                
-                
-				<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
-				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
-					@foreach (var producto in productosFiltrados)
-					{
-						<ComponentModel @key="producto.adpro_codigo" Producto="producto" />
-
-						<li class="list-group-item list-group-item-action" @onclick="() => SeleccionarProducto(producto)">
-							@producto.adpro_descripcion
-						</li>
-					}
-				</ul>
-
-            
-        </div>
-
-       
-
-    </div>
-
-</div>
-<!--DETALLE DE COMPRAS-->
 
 <div class="container mt-5">
 	<div class="border p-4 rounded">
 
 		<div class="table-responsive">
-			<table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
+			<table class="table table-striped table-bordered table-hover table-compras" style="font-size: 10px;">
 				<thead>
-					<tr>						
-						<th>DESCRIPCION</th>
-						<th>CANTIDAD</th>
-						<th>VALOR</th>
-						<th>IVA</th>
-						<th>TOTAL</th>
-						<th>ELIMINAR</th>
+					<tr>
+						<th>GUIA</th>
+						<th>VENDEDOR</th>
+						<th>OBSERVACION</th>
+						<th>REGISTRO</th>
+						<th>ACCION</th>
 					</tr>
 				</thead>
 				<tbody>
 
-					@foreach (var trxDetalle in listDetalleTrx)
+					@foreach (var salida in FiltrarSalidas)
 					{
 						<tr>
-							
-							<td>@trxDetalle.adpro_nombre_producto</td>
-
-							<td>
-								<input type="number"
-									   @bind="trxDetalle.adkpr_cantidad"
-									   @bind:event="oninput"									  
-									   class="form-control form-control-sm"
-									   @onchange="() => ActualizarTotales(trxDetalle)"
-									   min="0" />
-							</td>
-
-							<td>
-								<input type="number"
-									   step="0.01"
-									   @bind="trxDetalle.adkpr_precio_unitario"
-									   @bind:event="oninput"
-									   @onchange="() => ActualizarTotales(trxDetalle)"
-									   class="form-control form-control-sm"
-									   min="0" />
-							</td>
-
-							
-
-							<td>@trxDetalle.adkpr_precio_iva</td>
-							<td>@trxDetalle.adkpr_precio_total</td>						
-
+							<td>@salida.AdcsaGuia</td>
+							<td>@salida.AdcsaVendedor</td>
+							<td>@salida.AdcsaFechaVenta</td>
+							<td>@salida.Adcsa_observacion</td>
 							<td>
 								<!-- Botón de editar -->
-								<button class="btn btn-success btn-sm" style="padding: 0.1rem 0.3rem; font-size: 0.75rem;" @onclick="() => EliminarDetalle(trxDetalle)">
-									<i class="fas fa-remove"></i>
+								<button class="btn btn-success btn-sm" @onclick="() => VisualizarCompra(salida)">
+									<i class="fa-regular fa-eye"></i>
 								</button>
 
 							</td>
-
 						</tr>
 					}
 
@@ -215,284 +73,125 @@
 			</table>
 		</div>
 
-
-
-    </div>
+	</div>
 </div>
 
-<div class="container mt-5">
-    <div class="border p-4 rounded">
+@* --- El Modal Registro --- *@
+<div class="modal fade" id="registroSalidaModal" tabindex="-1" aria-labelledby="registroSalidaModal" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		@* Usar modal-lg para un formulario grande *@
+		<div class="modal-content">
 
-        <div class="row">
-
-			<div class="col-md-8">
-
-				<textarea id="comentario" name="comentario" @bind="strObservacion" rows="3" cols="50">
-				
-				</textarea>
-
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="exampleModalLabel">Registrar</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"  aria-label=" Cerrar"></button>
 			</div>
 
-            <div class="col-md-4">
+			<div class="modal-body">
 
-                <!-- Botón Guardar -->
-                <button  class="btn btn-primary" @onclick="() => GuardarTrxProductos()">Guardar</button>
+				@* --- ¡RENDERIZACIÓN CONDICIONAL AQUÍ! --- *@
+				@if (mostrarFormularioModal)
+				{
+					<FrmRegistroSalida OnFormSubmitted="HandleFormSubmitted" />
+				}
+				else
+				{
+					<p>Cargando formulario...</p>
+				}
 
-            </div>
-           
-        </div>
-    </div>
+
+			</div>
+		</div>
+	</div>
 </div>
 
-@code {
-
-	private bool mostrarMensaje = false, mesageError=false;
-	private string busquedaProducto = string.Empty;
-	private List<Productos> productos;
-	private List<Productos> productosFiltrados = new();
-	//proveedores
-	private List<Clientes> clientes;
-	private List<Clientes> clientesFiltrado = new();
-	private string busquedaProveedor = string.Empty;
-	private string busquedaCliente = string.Empty;
-	private Clientes? clienteSeleccionado;
-	//
-	private bool mostrarSugerencias=false;
-	private bool mostrarSugerenciasCliente = false;
-	private bool _cargado = false;
-	private string idUser;
-	private Productos? productoSeleccionado;
-	//trxProductos
-	private string tipoIngreso = "seleccionar", factura, comprador, strMensajeMostrar, strObservacion;
-	private DateTime fechaCompra;
-	private TransaccionesProductos NewTrxProductos = new TransaccionesProductos();
-	private TransaccionesProductos newDetalleTrx = new TransaccionesProductos();
-	private List<TransaccionesProductos> listDetalleTrx = new List<TransaccionesProductos>();
-	private List<TipoTrxProducto> tipoTrxProductos = new List<TipoTrxProducto>();
-	//negocio
-	private int idNegocio;
+@code
+{
+	private string idUser, searchTerm = string.Empty;
+	private bool mostrarFormularioModal = false, mostrarCompraLectura=false;
+	private string ModalId = "registroSalidaModal";
+	private int idNegocio = 5;
+	private List<CabeceraSalida> salidas = new List<CabeceraSalida>();
 
 	protected override async Task OnInitializedAsync()
 	{
-		if (!_cargado)
-		{
-			_cargado = true;
-
-			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-			var user = authState.User;
-			var userClaims = user.Identities.First().Claims.ToList();
-			idUser = userClaims[0].Value;
-
-			idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
 
-			productos = await productoServices.getAllProductosCompraAsync();
-			clientes = await clienteService.GetClientesAsyncSalida(idNegocio);
-			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
-			//Para que cargue solo transacciones de ingreso
-			tipoTrxProductos = tipoTrxProductos.Where(t=> t.adtr_signo<0).ToList();
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		var userClaims = user.Identities.First().Claims.ToList();
+		idUser = userClaims[0].Value;
 
-		}
+		idNegocio = serviceUser.getIdNegocioByUser(idUser);
+
+		salidas = await sertviceCabeceraSalida.getSalidas(idNegocio);
+
 
 	}
 
-	private async  void  SeleccionarProducto(Productos producto)
+
+	private async void AgregarSalida()
 	{
-		productoSeleccionado = producto;
-		busquedaProducto = producto.adpro_descripcion;
-		await CargarDetalle(producto);
 
-
-		mostrarSugerencias = false;
-	}
-
-
-	private void FiltrarProductos(string busqueda)
-	{
-		if (string.IsNullOrWhiteSpace(busqueda))
-		{
-			productosFiltrados.Clear();
-			mostrarSugerencias = false;
-			return;
-		}
-
-		productosFiltrados = productos
-			.Where(p => p.adpro_descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-			.ToList();
-
-		mostrarSugerencias = productosFiltrados.Any();
-	}
-
-	//proveedores
-	private void SeleccionarCliente(Clientes cliente)
-	{
-		clienteSeleccionado = cliente;
-		busquedaCliente = cliente.adcu_name;
-		mostrarSugerenciasCliente = false;
-	}
-
-	private void FiltrarClientes(string busqueda)
-	{
 		try
 		{
-			if (string.IsNullOrWhiteSpace(busqueda))
-			{
-				clientesFiltrado.Clear();
-				mostrarSugerenciasCliente = false;
-				return;
-			}
+			mostrarFormularioModal = true;
+			// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario
+			StateHasChanged(); // Esto es importante par
 
-			clientesFiltrado = clientes
-				.Where(c => c.adcu_name.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-				.ToList();
+			await JSRuntime.InvokeVoidAsync("modalHandler.showModal", ModalId);
 
-			mostrarSugerenciasCliente = clientesFiltrado.Any();
 		}
 		catch (Exception ex)
 		{
-			Console.Write(ex.Message);
-
-		}
-
-	}
-
-
-
-	private async Task<int> CargarDetalle(Productos producto)
-	{
-		try
-		{
-			//se valida que se haya seleccionado un tipo de trx
-			if (tipoIngreso.Equals("seleccionar"))
-			{
-				mesageError = true;
-				strMensajeMostrar = "Se debe selecionar tipo transaccion!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				return 0;
-			}
-			
-
-			//SE VALIDA QUE EXISTA YA COLOCADO EL VALOR DE PROVEEDOR			
-			if (clienteSeleccionado != null)
-			{
-				newDetalleTrx = new TransaccionesProductos();
-				//detalles cabecera
-				newDetalleTrx.adbu_code = idNegocio;
-				newDetalleTrx.adkpr_userupdate = idUser;
-				newDetalleTrx.adkpr_factura = factura;
-				newDetalleTrx.adkpr_comprador = comprador;
-				newDetalleTrx.adprv_codigo = null;//se envia en null para proveedores cuando es salida.
-				newDetalleTrx.adcu_code = clienteSeleccionado.adcu_code; //cambio cliente
-				newDetalleTrx.adkpr_fecha = fechaCompra;
-				newDetalleTrx.adtr_codigo = Guid.Parse(tipoIngreso);
-				newDetalleTrx.adkpr_datecreated = DateTime.Now;
-				newDetalleTrx.adpro_codigo = producto.adpro_codigo;
-				newDetalleTrx.adpro_nombre_producto = producto.adpro_descripcion;
-				newDetalleTrx.adkpr_precio_unitario = producto.adpro_valor;
-				newDetalleTrx.adkpr_precio_iva = newDetalleTrx.adkpr_precio_unitario * decimal.Parse("0.15");
-				newDetalleTrx.adkpr_observacion = strObservacion;
-
-				listDetalleTrx.Add(newDetalleTrx);
-
-
-				return 1;
-
-			}
-			else
-			{
-				mesageError = true;
-				strMensajeMostrar = "No se ha seleccionado proveedor!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				return 0;
-
-
-			}
-
-
-
-
-
-		} catch (Exception ex)
-		{
 			Console.WriteLine(ex.Message);
-			return 0;
 
 		}
 
-	}
-
-	private void EliminarDetalle(TransaccionesProductos detalleEliminar)
-	{
-		listDetalleTrx.Remove(detalleEliminar);
 
 	}
 
-	private void ActualizarTotales(TransaccionesProductos trxDetalleAct)
+	private async void VisualizarCompra(CabeceraSalida compra)
 	{
-		trxDetalleAct.adkpr_precio_total = trxDetalleAct.adkpr_cantidad * (trxDetalleAct.adkpr_precio_unitario + trxDetalleAct.adkpr_precio_iva);
+		
+	}
+
+	private async void CerrarModalView()
+	{
+
+		/*mostrarCompraLectura = false;
+		StateHasChanged();
+		await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", modalLectura);*/
+
 
 	}
 
-	private async void GuardarTrxProductos()
+	// Este método se ejecuta cuando el formulario hijo (FormularioRegistroCompras) invoca OnFormSubmitted
+	private async Task HandleFormSubmitted(bool success)
 	{
-		try
+		if (success)
 		{
-			if (listDetalleTrx.Count > 0)
-			{
+			Console.WriteLine("Formulario guardado exitosamente. Cerrando modal.");
+			// ¡CRUCIAL! Llama a la función JavaScript para ocultar el modal
+			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
-				await trxProductos.GuardarLista(listDetalleTrx);
+			//Se envia actualizar las compras
+			salidas = await sertviceCabeceraSalida.getSalidas(idNegocio);
 
-				mostrarMensaje = true;
-				//Navigation.NavigateTo("/clientes");
-				StateHasChanged();
-				listDetalleTrx.Clear();
+			mostrarFormularioModal = false;
+			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
 
-				//una vez se guardado se envia a limpiar
-				busquedaCliente = string.Empty;
-				busquedaProducto = string.Empty;
-				comprador = string.Empty;
-				factura = string.Empty;
-				strObservacion = string.Empty;
-
-				await Task.Delay(1000);
-				mostrarMensaje = false;
-				StateHasChanged();
-
-
-			}
-			else
-			{
-				mesageError = true;
-				strMensajeMostrar = "No se puede guardar sin detalles de productos!";
-
-				await Task.Delay(1000);
-				mesageError = false;
-				StateHasChanged();
-				
-			}
-
-
-
-		} catch (Exception ex)
-		{
-			mesageError = true;
-			strMensajeMostrar = ex.Message;
-
-			await Task.Delay(1000);
-			mesageError = false;
-			StateHasChanged();
 
 		}
+		else
+		{
 
-	
+			Console.WriteLine("Operación de formulario no exitosa o cancelada. Modal permanece abierto.");
+		}
 	}
 
+	private IEnumerable<CabeceraSalida> FiltrarSalidas =>
+		salidas.Where(salida => string.IsNullOrEmpty(searchTerm) || salida.AdcsaGuia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || salida.AdcsaVendedor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
 
 }

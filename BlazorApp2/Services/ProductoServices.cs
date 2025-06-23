@@ -46,8 +46,9 @@ namespace BlazorApp2.Services
                 {
                     // Aquí especificas los dos campos que quieres retornar
                     adpro_codigo = p.adpro_codigo, 
-                    adpro_descripcion = p.adpro_descripcion, 
-                    adpro_valor = p.adpro_valor    
+                    adpro_descripcion = p.adpro_descripcion,
+					adpro_cantidad = p.adpro_cantidad,
+					adpro_valor = p.adpro_valor    
                 })
                      .ToListAsync();
 

@@ -10,7 +10,7 @@ using Microsoft.Data.SqlClient;
 namespace BlazorApp2.Services
 {
 
-	
+
 	public class TransaccProductoServices
 	{
 		private readonly ApplicationDbContext _context;
@@ -27,7 +27,7 @@ namespace BlazorApp2.Services
 				// _context.Entry(cliente).State = EntityState.Modified;
 				await _context.TransaccionesProductos.AddRangeAsync(trxProducto); // Añade todos a la vez al contexto
 				await _context.SaveChangesAsync(); // Guarda todos los cambios en una sola transacción			
-				
+
 				return true;
 			}
 			catch (Exception ex)
@@ -38,10 +38,10 @@ namespace BlazorApp2.Services
 
 		public async Task InsertUpdateTrxProducts(string tipoIngreso, Guid codigoEntradaSalida)
 		{
-			
+
 			string sqlQuery = "EXEC INSERT_UPDATE_TRX_PRODUCTS @tipoIngreso, @codigoEntradaSalida";
 
-		
+
 			try
 			{
 				await _context.Database.ExecuteSqlRawAsync(
@@ -50,7 +50,7 @@ namespace BlazorApp2.Services
 					new SqlParameter("codigoEntradaSalida", codigoEntradaSalida) // Si usas SQL Server
 				);
 
-				
+
 				Console.WriteLine($"Stored Procedure INSERT_UPDATE_TRX_PRODUCTS ejecutado con éxito para TipoIngreso: {tipoIngreso}, Codigo: {codigoEntradaSalida}");
 			}
 			catch (Exception ex)
@@ -60,6 +60,16 @@ namespace BlazorApp2.Services
 			}
 		}
 
+		public List<MovimientosProducto> getVistaKardex(string tipoReporte, Guid producto, DateTime fechaInicio, DateTime fechaFin)
+		{
+
+			//EXEC SP_VISTA_KARDEX @tipoBusqueda='RESUMEN_PRODUCTO',@producto='1565A54D-7194-437A-25CD-08DDAC8F9D9F',@fechaInicio=NULL,@fechaFin=NULL
+
+			return _context.MovimientosProductos.FromSqlRaw("EXEC SP_VISTA_KARDEX @tipoBusqueda = {0},@producto = {1}," +
+				"@fechaInicio = {2},@fechaFin = {3}", tipoReporte, producto, fechaInicio, fechaFin).ToList();
+
+
+		}
 
 
 	}

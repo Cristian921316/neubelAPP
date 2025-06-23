@@ -29,6 +29,9 @@ builder.Services.AddScoped<TipoTrxProductoServices>();
 builder.Services.AddScoped<ProductoState>();
 builder.Services.AddScoped<ServiceCabeceraCompra>();
 builder.Services.AddScoped<ServiceDetalleCompra>();
+builder.Services.AddScoped<ServiceCabeceraSalida>();
+builder.Services.AddScoped<ServiceDetalleSalida>();
+
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
