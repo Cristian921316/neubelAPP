@@ -6,6 +6,7 @@
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
 @inject ServiceCabeceraSalida sertviceCabeceraSalida
+@inject ServiceDetalleSalida serviceDetalleSalida
 @inject TipoTrxProductoServices tipoTrx
 @inject ServiceClientes clienteService
 @inject ServiceUserNegocio serviceUser
@@ -60,7 +61,7 @@
 							<td>@salida.Adcsa_observacion</td>
 							<td>
 								<!-- Botón de editar -->
-								<button class="btn btn-success btn-sm" @onclick="() => VisualizarCompra(salida)">
+								<button class="btn btn-success btn-sm" @onclick="() => VisualizarSalida(salida)">
 									<i class="fa-regular fa-eye"></i>
 								</button>
 
@@ -105,13 +106,158 @@
 	</div>
 </div>
 
+
+@* --- El Modal lectura --- *@
+<div class="modal fade" id="lecturaSalida" tabindex="-1" aria-labelledby="lecturaSalida" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		@* Usar modal-lg para un formulario grande *@
+		<div class="modal-content">
+
+			<div class="modal-body">
+
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">Informacion Salida</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="container mt-4">
+
+
+					<div class="card mb-4">
+
+						<div class="card-body">
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label for="factura" class="form-label">Factura</label>
+									<input type="text" id="factura" class="form-control" @bind="_factura" disabled>
+								</div>
+								<div class="col-md-6">
+									<label for="comprador" class="form-label">Comprador</label>
+									<input type="text" id="comprador" class="form-control" @bind="_comprador" disabled>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label for="registro" class="form-label">Fecha de Registro</label>
+									<input type="date" id="registro" class="form-control" @bind="_registro" disabled>
+								</div>
+								<div class="col-md-6">
+									<label for="proveedor" class="form-label">Proveedor</label>
+									<input type="text" id="proveedor" class="form-control" disabled>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-header">
+							Detalle de Productos
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-striped table-bordered">
+									<thead>
+										<tr>
+											<th>Producto</th>
+											<th>Cantidad</th>
+											<th>Precio Unitario</th>
+											<th>Iva</th>
+											<th>Total</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var trxDetalle in detalles)
+										{
+											<tr>
+
+												<td>@trxDetalle.AdproNombre</td>
+												<td>@trxDetalle.AdtcCantidad</td>
+												<td>@trxDetalle.AdtcPrecioUnitario</td>
+												<td>@trxDetalle.AdtcIva</td>
+												<td>@trxDetalle.AdtcPrecioTotal</td>
+
+											</tr>
+										}
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div class="container mt-5">
+						<div class="border p-4 rounded">
+
+							<div class="row">
+
+								<div class="col-md-6">
+								</div>
+
+								<div class="col-md-6">
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_subtotal" class="form-label mb-0 text-md-end">Subtotal:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_subtotal" class="form-control text-end" @bind="_subtotal" disabled />
+										</div>
+									</div>
+
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_iva" class="form-label mb-0 text-md-end">IVA:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_iva" class="form-control text-end" @bind="_iva" disabled />
+										</div>
+									</div>
+
+									<div class="row align-items-center mb-2">
+										<div class="col-md-4">
+											<label for="adcom_total" class="form-label mb-0 text-md-end">Total:</label>
+										</div>
+										<div class="col-md-8">
+											<input type="text" id="adcom_total" class="form-control text-end" @bind="_total" disabled />
+										</div>
+									</div>
+
+								</div>
+
+
+
+
+							</div>
+
+
+						</div>
+					</div>
+
+
+
+				</div>
+
+
+
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
 @code
 {
 	private string idUser, searchTerm = string.Empty;
 	private bool mostrarFormularioModal = false, mostrarCompraLectura=false;
-	private string ModalId = "registroSalidaModal";
+	private string ModalId = "registroSalidaModal", modalLectura="lecturaSalida";
 	private int idNegocio = 5;
 	private List<CabeceraSalida> salidas = new List<CabeceraSalida>();
+	private List<DetalleSalida> detalles = new List<DetalleSalida>();
+	Guid _idCompra = Guid.Empty;
+	private string _factura, _comprador, _observacion;
+	DateTime? _registro;
+	private decimal _subtotal, _iva, _total;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -151,8 +297,23 @@
 
 	}
 
-	private async void VisualizarCompra(CabeceraSalida compra)
+	private async void VisualizarSalida(CabeceraSalida salida)
 	{
+
+		_idCompra = salida.AdcsaCodigo;
+		_factura = salida.AdcsaGuia;
+		_comprador = salida.AdcsaVendedor;
+		_observacion = salida.Adcsa_observacion;
+		_registro = salida.AdcsaFechaVenta;
+		_subtotal = salida.AdcsaSubtotal;
+		_iva = salida.AdcsaIva;
+		_total = salida.AdcsaTotal;
+		detalles = await serviceDetalleSalida.GetDetalleSalidasAsync(salida.AdcsaCodigo);
+
+		mostrarCompraLectura = true;
+		// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario
+		StateHasChanged();
+		await JSRuntime.InvokeVoidAsync("modalHandler.showModal", modalLectura);
 		
 	}
 
