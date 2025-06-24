@@ -496,25 +496,18 @@
 	{
 		listDetalleTrx.Remove(detalleEliminar);
 
-		if (listDetalleTrx.Count > 0)
+		cabeceraSalida.AdcsaSubtotal = 0;
+		cabeceraSalida.AdcsaIva = 0;
+		cabeceraSalida.AdcsaTotal = 0;		
 
+		foreach (var detalle in listDetalleTrx)
 		{
-
-			foreach (var detalle in listDetalleTrx)
-			{
-				cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioUnitario;
-				cabeceraSalida.AdcsaIva += detalle.AdtcIva;
-				cabeceraSalida.AdcsaTotal += detalle.AdtcPrecioTotal;
-			}
-
+			cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioTotal;
+			cabeceraSalida.AdcsaIva += detalle.AdtcIva;
+			cabeceraSalida.AdcsaTotal = cabeceraSalida.AdcsaSubtotal + cabeceraSalida.AdcsaIva;
 		}
-		else
-		{
-			cabeceraSalida.AdcsaSubtotal = decimal.Parse("0.00");
-			cabeceraSalida.AdcsaIva = decimal.Parse("0.00");
-			cabeceraSalida.AdcsaTotal = decimal.Parse("0.00");
 
-		}
+		
 
 	}
 
@@ -537,13 +530,18 @@
 
 		}
 
-		trxDetalleAct.AdtcPrecioTotal = trxDetalleAct.AdtcCantidad * (trxDetalleAct.AdtcPrecioUnitario + trxDetalleAct.AdtcIva);
-		//se recorre para el calculo
+		trxDetalleAct.AdtcIva = trxDetalleAct.AdtcCantidad * trxDetalleAct.AdtcPrecioUnitario * decimal.Parse("0.15");
+		trxDetalleAct.AdtcPrecioTotal = trxDetalleAct.AdtcCantidad * trxDetalleAct.AdtcPrecioUnitario;
+		
+		cabeceraSalida.AdcsaSubtotal = 0;
+		cabeceraSalida.AdcsaIva = 0;
+		cabeceraSalida.AdcsaTotal = 0;
+
 		foreach (var detalle in listDetalleTrx)
 		{
-			cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioUnitario;
+			cabeceraSalida.AdcsaSubtotal += detalle.AdtcPrecioTotal;
 			cabeceraSalida.AdcsaIva += detalle.AdtcIva;
-			cabeceraSalida.AdcsaTotal += detalle.AdtcPrecioTotal;
+			cabeceraSalida.AdcsaTotal = cabeceraSalida.AdcsaSubtotal + cabeceraSalida.AdcsaIva;
 		}
 
 	}

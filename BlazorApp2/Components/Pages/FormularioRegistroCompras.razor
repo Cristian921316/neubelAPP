@@ -441,11 +441,11 @@
 
 
 					return 1;
-					
+
 				}
 
 
-				
+
 
 			}
 			else
@@ -490,40 +490,39 @@
 	{
 		listDetalleTrx.Remove(detalleEliminar);
 
-		if (listDetalleTrx.Count > 0)
+		//se encera siempre para que se vuelva a calcular.
+		cabeceraCompra.adcom_subtotal = 0;
+		cabeceraCompra.adcom_iva = 0;
+		cabeceraCompra.adcom_total = 0;
 
+
+		foreach (var detalle in listDetalleTrx)
 		{
-
-			foreach (var detalle in listDetalleTrx)
-			{
-				cabeceraCompra.adcom_subtotal += detalle.adtc_precioUnitario;
-				cabeceraCompra.adcom_iva += detalle.adtc_iva;
-				cabeceraCompra.adcom_total += detalle.adtc_precio_total;
-			}
-
+			cabeceraCompra.adcom_subtotal += detalle.adtc_precio_total;
+			cabeceraCompra.adcom_iva += detalle.adtc_iva;
+			cabeceraCompra.adcom_total = cabeceraCompra.adcom_subtotal + cabeceraCompra.adcom_iva;
 		}
-		else
-		{
-			cabeceraCompra.adcom_subtotal = decimal.Parse("0.00");
-			cabeceraCompra.adcom_iva = decimal.Parse("0.00");
-			cabeceraCompra.adcom_total = decimal.Parse("0.00");
-			
-		}
-
 
 
 	}
 
 	private void ActualizarTotales(DetalleCompra trxDetalleAct)
 	{
-		trxDetalleAct.adtc_precio_total = trxDetalleAct.adtc_cantidad * (trxDetalleAct.adtc_precioUnitario + trxDetalleAct.adtc_iva);
+
+		trxDetalleAct.adtc_iva = trxDetalleAct.adtc_cantidad * trxDetalleAct.adtc_precioUnitario * decimal.Parse("0.15");
+		trxDetalleAct.adtc_precio_total = trxDetalleAct.adtc_cantidad * trxDetalleAct.adtc_precioUnitario;
+
+		//se encera siempre para que se vuelva a calcular.
+		cabeceraCompra.adcom_subtotal = 0;
+		cabeceraCompra.adcom_iva = 0;
+		cabeceraCompra.adcom_total = 0;
 
 		//se recorre para el calculo 
 		foreach (var detalle in listDetalleTrx)
 		{
-			cabeceraCompra.adcom_subtotal += detalle.adtc_precioUnitario;
+			cabeceraCompra.adcom_subtotal += detalle.adtc_precio_total;
 			cabeceraCompra.adcom_iva += detalle.adtc_iva;
-			cabeceraCompra.adcom_total += detalle.adtc_precio_total;
+			cabeceraCompra.adcom_total = cabeceraCompra.adcom_subtotal + cabeceraCompra.adcom_iva;
 		}
 
 	}
@@ -536,6 +535,7 @@
 			{
 
 				//se debe enviar a guardar primeramente la cabecera
+				cabeceraCompra.adcom_userUpdate = idUser;
 				cabeceraCompra.adprv_codigo = proveedorSeleccionado.adprv_codigo;
 				await serviceCabeceraCompra.guardarCabeceraCompra(cabeceraCompra,true);
 

@@ -17,7 +17,7 @@ namespace BlazorApp2.Models
 		// ADCSA_GUIA (varchar) - CLAVE PRIMARIA	
 		[Column("ADCSA_GUIA")] // Mapea la propiedad al nombre de la columna en la BD
 		[StringLength(255)] // Asumo una longitud común para varchar si no se especifica. AJUSTA ESTO a la longitud REAL de tu DB.
-		public string AdcsaGuia { get; set; }
+		public string? AdcsaGuia { get; set; }
 
 		[Column("ADTR_CODIGO")]
 		public Guid AdtrCodigo { get; set; } // uniqueidentifier en SQL Server se mapea a Guid en C#
