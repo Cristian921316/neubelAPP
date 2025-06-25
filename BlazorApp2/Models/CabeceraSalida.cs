@@ -50,7 +50,7 @@ namespace BlazorApp2.Models
 		// ADCSA_VENDEDOR (varchar)
 		[Column("ADCSA_OBSERVACION")]
 		[StringLength(255)] // Ajusta la longitud según tu base de datos
-		public string Adcsa_observacion { get; set; }
+		public string? Adcsa_observacion { get; set; }
 
 		// ADCSA_USERUPDATE (nvarchar)
 		[Column("ADCSA_USERUPDATE")]
