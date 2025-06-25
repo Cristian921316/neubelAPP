@@ -363,6 +363,10 @@
 
 
 	private IEnumerable<CabeceraCompra> FiltrarCompras =>
-		compras.Where(compra => string.IsNullOrEmpty(searchTerm) || compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || compra.adcom_comprador.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+	compras.Where(compra =>
+		string.IsNullOrEmpty(searchTerm) ||
+		(compra.adcom_factura != null && compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(compra.adcom_observacion != null && compra.adcom_observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(compra.adcom_comprador != null && compra.adcom_comprador.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 
 }

@@ -352,7 +352,11 @@
 	}
 
 	private IEnumerable<CabeceraSalida> FiltrarSalidas =>
-		salidas.Where(salida => string.IsNullOrEmpty(searchTerm) || salida.AdcsaGuia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || salida.AdcsaVendedor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+	salidas.Where(salida =>
+		string.IsNullOrEmpty(searchTerm) ||
+		(salida.AdcsaGuia != null && salida.AdcsaGuia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.Adcsa_observacion != null && salida.Adcsa_observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.AdcsaVendedor != null && salida.AdcsaVendedor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 
 
 }
