@@ -23,8 +23,6 @@
 }
 
 
-
-
 <div class="container mt-5">
 
 
@@ -32,7 +30,7 @@
     <div class="col-9">
         <div class="input-group flex-nowrap">
             <span class="input-group-text" id="addon-wrapping">Buscar</span>
-            <input type="text" class="form-control" placeholder="Por descripcion, codigo..." aria-describedby="addon-wrapping" @bind="searchTerm" />
+                <input type="text" class="form-control" placeholder="Por descripcion, codigo..." aria-describedby="addon-wrapping" @bind="searchTerm" @bind:event="oninput" @onkeydown="BuscarConEnter" />
         </div>
     </div>
 
@@ -45,7 +43,7 @@
 
 </div>
 
-@if (productoState.Productos == null || !productoState.Productos.Any())
+    @if (productos == null || !productos.Any())
 {
     <p>Cargando productos...</p>
 }
@@ -67,7 +65,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                    @foreach (var producto in productoState.Productos)
+                    @foreach (var producto in productos)
                 {
                     <tr>
                         <td>@producto.adpro_codigoalterno1</td>
@@ -98,7 +96,7 @@ else
         </table>
     </div>
 
-    
+   
 
 }
 
@@ -107,14 +105,10 @@ else
 </div>
 
 
-
-
-
-
 @code {
 
     // Aquí debes declarar la variable
-    private List<Productos> productos;
+    private List<Productos> productos,productosPaginar;
     private string searchTerm = string.Empty, strMensajeMostrar = string.Empty;
     private Negocio negocio;
 
@@ -126,7 +120,7 @@ else
 
     //paginador
     private int paginaActual = 1;
-    private int registrosPorPagina = 20;
+    private int registrosPorPagina = 10;
     private int totalPaginas;
     private int totalPendientes = 0;
     private int totalRegistros = 0;
@@ -143,10 +137,11 @@ else
     {
         try
         {
-            if (!productoState.IsDataLoaded)
+            if (!_isDataLoaded)
             {
-                productoState.Productos = await productoServices.getAllProductosAsyncPage(1, 10, "");
-                productoState.IsDataLoaded = true;
+                productos = await productoServices.getAllProductosAsyncPage(1,10,"");                            
+                _isDataLoaded = true;
+                
             }
 
         } catch (Exception ex)
@@ -163,8 +158,23 @@ else
 
     }
 
-   
-      
+    private async Task BuscarConEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            StateHasChanged();
+            productos = await productoServices.getAllProductosAsyncPage(1, 10, searchTerm);
+            
+            // Lógica al presionar Enter
+            Console.WriteLine($"Buscando: {searchTerm}");
+            // Aquí puedes llamar a tu método de búsqueda o similar
+        }
+    }
+
+    
+
+
+
 
     private void EditarProducto(Guid id)
     {
@@ -176,10 +186,8 @@ else
     {
         NavigationManager.NavigateTo($"/RegistrarProductos");
 
-    }
-    
+    }  
 
-    private IEnumerable<Productos> FiltrarProductos =>
-         productos.Where(producto => string.IsNullOrEmpty(searchTerm) || producto.adpro_descripcion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) );
+    
 
 }

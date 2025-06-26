@@ -70,15 +70,13 @@ namespace BlazorApp2.Services
                 if (descripcion.Length > 0)
                 {
 
-                    return await _context.Productos.OrderByDescending(p => p.adpro_datecreated) // ¡Importante ordenar para paginación consistente!												
+                    return await _context.Productos.Where(p => p.adpro_descripcion.ToLower().Contains(descripcion.ToLower()))
                                                 .Take(pageSize)
-												.Where(p => p.adpro_descripcion.ToLower().Contains(descripcion.ToLower()))
-												.ToListAsync();
+                                                .ToListAsync();
 				}
                 else {
 
-					return await _context.Productos.AsNoTracking().OrderBy(p => p.adpro_descripcion) // ¡Importante ordenar para paginación consistente!
-												.Skip((pageNumber - 1) * pageSize)
+					return await _context.Productos.AsNoTracking().OrderBy(p => p.adpro_descripcion) // ¡Importante ordenar para paginación consistente!												
 												.Take(pageSize)
 												.ToListAsync();
 
