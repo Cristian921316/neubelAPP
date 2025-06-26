@@ -1,6 +1,7 @@
 ﻿@page "/clientes"
 @using BlazorApp2.Services
 @using BlazorApp2.Models
+@using BlazorApp2.Utils
 @using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @inject ServiceClientes ClienteService
@@ -8,31 +9,46 @@
 @inject ServiceUserNegocio serviceUser
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Clientes</PageTitle>
 
 <h2>Clientes</h2>
 
+ @if (!string.IsNullOrEmpty(MensajeEstado))
+{
+    <div class="alert alert-info mt-3">@MensajeEstado</div>
+}
 
 <!-- Filtro de búsqueda -->
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-6">
         <div class="input-group flex-nowrap">
             <span class="input-group-text" id="addon-wrapping">Buscar</span>
             <input type="text" class="form-control" placeholder="Por nombre, apellido, sector..." aria-describedby="addon-wrapping" @bind="searchTerm" />
         </div>
     </div>
 
-    <div class="col-3">
+    <div class="col-2">
         <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarCliente">
             <i class="bi bi-file-earmark-arrow-down me-2"></i>
             Agregar
         </button>
     </div>
 
+    <div class="col-2">
+
+        <button class="btn btn-success" @onclick="ExportarDatos">
+            <i class="fas fa-file-excel"></i>Exportar
+        </button>
+
+    </div>
+
  </div>
+
+
 
 <!--modal de ejemplo para ingreso-->
 <!-- Modal -->
@@ -105,10 +121,11 @@ else
 
 @code {
     // Aquí debes declarar la variable
-    private List<Clientes> clientes;
+    private List<Clientes> clientes,clientesExport;
     private string searchTerm = string.Empty;
     private Negocio negocio;
     private int idNegocio = 5;
+    private string MensajeEstado = string.Empty;
 
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
@@ -142,6 +159,32 @@ else
     {
         NavigationManager.NavigateTo($"/RegistrarClientes/{id}");
     }
+
+    private async Task ExportarDatos()
+    {
+        try
+        {
+            MensajeEstado = "Generando archivo...";
+            //se genera los datos
+            clientesExport = await ClienteService.GetClientesAsync(idNegocio);
+
+            // Llama a tu función genérica de exportación
+            var excelStream = ExportExcel.ExportToExcel(clientesExport, "ReporteClientes.xlsx", "Lista de Clientes");
+
+            // --- Opción 1: Descargar el archivo directamente en el navegador (recomendado para Blazor) ---
+            // Usa JavaScript para descargar el MemoryStream como un archivo
+            await JSRuntime.InvokeVoidAsync("saveAsFile", "ReporteClientes.xlsx", Convert.ToBase64String(excelStream.ToArray()));
+
+            MensajeEstado = "";
+        }
+        catch (Exception ex)
+        {
+            MensajeEstado = $"Error al exportar a Excel: {ex.Message}";
+            MensajeEstado = "";
+            // Aquí podrías loggear el error
+        }
+    }
+
 
     private IEnumerable<Clientes> FiltrarClientes =>
          clientes.Where(cliente => string.IsNullOrEmpty(searchTerm) || cliente.adcu_name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || cliente.adcu_direction.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));

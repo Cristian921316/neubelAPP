@@ -1,12 +1,14 @@
 ﻿@page "/productos"
 @using BlazorApp2.Services
 @using BlazorApp2.Models
+@using BlazorApp2.Utils
 @using Microsoft.AspNetCore.Authorization
 @inject ProductoServices productoServices
 @inject NegocioService serviceNegocio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject ProductoState productoState
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 @attribute [Authorize]
 
@@ -22,23 +24,36 @@
     </div>
 }
 
+@if (!string.IsNullOrEmpty(MensajeEstado))
+{
+    <div class="alert alert-info mt-3">@MensajeEstado</div>
+}
+
 
 <div class="container mt-5">
 
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-6">
         <div class="input-group flex-nowrap">
             <span class="input-group-text" id="addon-wrapping">Buscar</span>
                 <input type="text" class="form-control" placeholder="Por descripcion, codigo..." aria-describedby="addon-wrapping" @bind="searchTerm" @bind:event="oninput" @onkeydown="BuscarConEnter" />
         </div>
     </div>
 
-        <div class="col-3">
+        <div class="col-2">
             <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarProducto">
                 <i class="bi bi-file-earmark-arrow-down me-2"></i>
                 Agregar
             </button>
+        </div>
+
+        <div class="col-2">
+
+            <button class="btn btn-success" @onclick="ExportarDatos">
+                <i class="fas fa-file-excel"></i>Exportar
+            </button>
+
         </div>
 
 </div>
@@ -108,12 +123,13 @@ else
 @code {
 
     // Aquí debes declarar la variable
-    private List<Productos> productos,productosPaginar;
+    private List<Productos> productos,productosExport;
     private string searchTerm = string.Empty, strMensajeMostrar = string.Empty;
     private Negocio negocio;
 
 
     private bool mesageError = false, guardarOK = true;
+    private string MensajeEstado = string.Empty;
 
     //objeto productos a guardar
     private Productos productosSave = new Productos();
@@ -141,7 +157,7 @@ else
             {
                 productos = await productoServices.getAllProductosAsyncPage(1,10,"");                            
                 _isDataLoaded = true;
-                
+
             }
 
         } catch (Exception ex)
@@ -154,7 +170,7 @@ else
             StateHasChanged();
 
         }      
-        
+
 
     }
 
@@ -164,15 +180,38 @@ else
         {
             StateHasChanged();
             productos = await productoServices.getAllProductosAsyncPage(1, 10, searchTerm);
-            
+
             // Lógica al presionar Enter
             Console.WriteLine($"Buscando: {searchTerm}");
             // Aquí puedes llamar a tu método de búsqueda o similar
         }
     }
 
-    
 
+    private async Task ExportarDatos()
+    {
+        try
+        {
+            MensajeEstado = "Generando archivo...";
+            //se genera los datos
+            productosExport = await productoServices.getAllProductosAsync();
+
+            // Llama a tu función genérica de exportación
+            var excelStream = ExportExcel.ExportToExcel(productosExport, "ReporteDeProductos.xlsx", "Lista de Productos");
+
+            // --- Opción 1: Descargar el archivo directamente en el navegador (recomendado para Blazor) ---
+            // Usa JavaScript para descargar el MemoryStream como un archivo
+            await JSRuntime.InvokeVoidAsync("saveAsFile", "ReporteDeProductos.xlsx", Convert.ToBase64String(excelStream.ToArray()));
+
+            MensajeEstado = "";
+        }
+        catch (Exception ex)
+        {
+            MensajeEstado = $"Error al exportar a Excel: {ex.Message}";
+            MensajeEstado = "";
+            // Aquí podrías loggear el error
+        }
+    }
 
 
 

@@ -1,6 +1,7 @@
 ﻿@page "/proveedores"
 @using BlazorApp2.Services
 @using BlazorApp2.Models
+@using BlazorApp2.Utils
 @using Microsoft.AspNetCore.Authorization
 @inject ProveedorServices proveedoresService
 @inject NegocioService serviceNegocio
@@ -13,6 +14,12 @@
 
 
 <h2>Proveedores</h2>
+
+@if (!string.IsNullOrEmpty(MensajeEstado))
+{
+    <div class="alert alert-info mt-3">@MensajeEstado</div>
+}
+
 
 <!-- Filtro de búsqueda -->
 @if (mostrarMensaje)
@@ -33,18 +40,26 @@
 
 
 <div class="row">
-    <div class="col-9">
+    <div class="col-6">
         <div class="input-group flex-nowrap">
             <span class="input-group-text" id="addon-wrapping">Buscar</span>
             <input type="text" class="form-control" placeholder="Por nombre, apellido, sector..." aria-describedby="addon-wrapping" @bind="searchTerm" />
         </div>
     </div>
 
-    <div class="col-3">
+    <div class="col-2">
         <button class="btn btn-primary  mb-0 me-2" @onclick="AgregarProveedor">
             <i class="bi bi-file-earmark-arrow-down me-2"></i>
             Agregar
         </button>
+    </div>
+
+    <div class="col-2">
+
+        <button class="btn btn-success" @onclick="ExportarDatos">
+            <i class="fas fa-file-excel"></i>Exportar
+        </button>
+
     </div>
 
 </div>
@@ -159,7 +174,7 @@ else
 @code {
 
     // Aquí debes declarar la variable
-    private List<Proveedor> proveedores;
+    private List<Proveedor> proveedores,proveedoresExport;
     private string searchTerm = string.Empty;
     private Negocio negocio;
     private bool guardaOK = true;
@@ -168,6 +183,8 @@ else
     private Proveedor nuevoProv = new Proveedor();
     private string idUser, strMensajeMostrar= string.Empty;
     private bool mostrarMensaje = false, mesageError= false;
+    //export
+    private string MensajeEstado = string.Empty;
 
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
@@ -238,6 +255,32 @@ else
         await JSRuntime.InvokeVoidAsync("modalHandler.showModal", ModalId);
         guardaOK = false; // actualiza
     }
+
+    private async Task ExportarDatos()
+    {
+        try
+        {
+            MensajeEstado = "Generando archivo...";
+            //se genera los datos
+            proveedoresExport = await proveedoresService.getAllProveedorAsync(idNegocio);
+
+            // Llama a tu función genérica de exportación
+            var excelStream = ExportExcel.ExportToExcel(proveedoresExport, "ReporteProveedores.xlsx", "Lista de Proveedores");
+
+            // --- Opción 1: Descargar el archivo directamente en el navegador (recomendado para Blazor) ---
+            // Usa JavaScript para descargar el MemoryStream como un archivo
+            await JSRuntime.InvokeVoidAsync("saveAsFile", "ReporteProveedores.xlsx", Convert.ToBase64String(excelStream.ToArray()));
+
+            MensajeEstado = "";
+        }
+        catch (Exception ex)
+        {
+            MensajeEstado = $"Error al exportar a Excel: {ex.Message}";
+            MensajeEstado = "";
+            // Aquí podrías loggear el error
+        }
+    }
+
 
     private IEnumerable<Proveedor> FiltrarProveedores =>
          proveedores.Where(prov => string.IsNullOrEmpty(searchTerm) || prov.adprv_nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
