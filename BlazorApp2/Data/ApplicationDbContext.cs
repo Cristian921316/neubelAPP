@@ -1,4 +1,5 @@
 using BlazorApp2.Models;
+using BlazorApp2.Models.VIEWS;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +36,8 @@ namespace BlazorApp2.Data
 
 		public DbSet<MovimientosProducto> MovimientosProductos { get; set; }
 
+        public DbSet<ViewCompras> viewCompras { get; set; }
 
-	}
+
+    }
 }

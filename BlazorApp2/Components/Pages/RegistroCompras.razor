@@ -1,6 +1,7 @@
 ﻿@page "/registroCompras"
 @using BlazorApp2.Services
 @using BlazorApp2.Models
+@using BlazorApp2.Models.VIEWS
 @using Microsoft.AspNetCore.Authorization
 @using System.Diagnostics
 @rendermode InteractiveServer
@@ -47,9 +48,10 @@
 				<thead>
 					<tr>
 						<th>FACTURA</th>
+						<th>PROVEEDOR</th>
 						<th>COMPRADOR</th>
-						<th>VALOR</th>
 						<th>OBSERVACION</th>
+						<th>VALOR</th>						
 						<th>REGISTRO</th>
 						<th>ACCION</th>						
 					</tr>
@@ -59,11 +61,12 @@
 					@foreach (var compra in FiltrarCompras)
 					{
 						<tr>
-							<td>@compra.adcom_factura</td>
-							<td>@compra.adcom_comprador</td>
-							<td>@compra.adcom_total</td>
-							<td>@compra.adcom_observacion</td>
-							<td>@compra.adcom_dateCreated</td>
+							<td>@compra.Factura</td>
+							<td>@compra.Proveedor</td>
+							<td>@compra.Comprador</td>
+							<td>@compra.Observacion</td>
+							<td>@compra.Valor</td>
+							<td>@compra.Registro</td>
 							<td>
 								<!-- Botón de editar -->
 								<button class="btn btn-success btn-sm" @onclick="() => VisualizarCompra(compra)">
@@ -147,7 +150,7 @@
 								</div>
 								<div class="col-md-6">
 									<label for="proveedor" class="form-label">Proveedor</label>
-									<input type="text" id="proveedor" class="form-control"  disabled>
+									<input type="text" id="proveedor" class="form-control" @bind="_proveedor" disabled>
 								</div>
 							</div>
 						</div>
@@ -258,10 +261,10 @@
 	private string ModalId = "registroComprasModal"; // ID del modal para JS
 	private string modalLectura = "compraLectura";
 	private bool mostrarFormularioModal = false, mostrarCompraLectura = false; // <-- ¡La bandera clave! Inicialmente false.
-	private List<CabeceraCompra> compras = new List<CabeceraCompra>();
+	private List<ViewCompras> compras = new List<ViewCompras>();
 	private List<DetalleCompra> detalles = new List<DetalleCompra>();
 	Guid _idCompra = Guid.Empty;
-	private string _factura, _comprador, _observacion;
+	private string _factura, _comprador, _observacion,_proveedor;
 	private int idNegocio = 5; //valor por defecto
 	DateTime? _registro;
 	private decimal _subtotal, _iva, _total;
@@ -277,7 +280,7 @@
 
 		idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
-		compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(idNegocio);
+		compras = serviceCabeceraCompra.getComprasAll(idNegocio);
 
 
 	}
@@ -305,17 +308,18 @@
 
 	}
 
-	private async void VisualizarCompra(CabeceraCompra compra)
+	private async void VisualizarCompra(ViewCompras compra)
 	{
-		_idCompra = compra.adcom_codigo;
-		_factura = compra.adcom_factura;
-		_comprador = compra.adcom_comprador;
-		_observacion = compra.adcom_observacion;
-		_registro = compra.adcom_dateCreated;
-		_subtotal = compra.adcom_subtotal;
-		_iva = compra.adcom_iva;
-		_total = compra.adcom_total;
-		detalles = await serviceDetalleCompra.GetDetalleComprasAsync(compra.adcom_codigo);
+		_idCompra = compra.IdCompra;
+		_factura = compra.Factura;
+		_proveedor = compra.Proveedor;
+		_comprador = compra.Comprador;
+		_observacion = compra.Observacion;
+		_registro = compra.Registro;
+		_subtotal = compra.Subtotal;
+		_iva = compra.Iva;
+		_total = compra.Valor;
+		detalles = await serviceDetalleCompra.GetDetalleComprasAsync(compra.IdCompra);
 		
 		mostrarCompraLectura = true;
 		// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario	
@@ -346,7 +350,7 @@
 			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
 			//Se envia actualizar las compras
-			compras = await serviceCabeceraCompra.GetCabeceraComprasAsync(idNegocio);
+			compras = serviceCabeceraCompra.getComprasAll(idNegocio);
 
 			mostrarFormularioModal = false;
 			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
@@ -362,11 +366,12 @@
 
 
 
-	private IEnumerable<CabeceraCompra> FiltrarCompras =>
+	private IEnumerable<ViewCompras> FiltrarCompras =>
 	compras.Where(compra =>
 		string.IsNullOrEmpty(searchTerm) ||
-		(compra.adcom_factura != null && compra.adcom_factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-		(compra.adcom_observacion != null && compra.adcom_observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-		(compra.adcom_comprador != null && compra.adcom_comprador.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+		(compra.Factura != null && compra.Factura.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(compra.Observacion != null && compra.Observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(compra.Proveedor != null && compra.Proveedor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(compra.Comprador != null && compra.Comprador.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 
 }

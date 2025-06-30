@@ -1,5 +1,6 @@
 ﻿using BlazorApp2.Data;
 using BlazorApp2.Models;
+using BlazorApp2.Models.VIEWS;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp2.Services
@@ -71,6 +72,13 @@ namespace BlazorApp2.Services
 			}
 		}
 
+		public List<ViewCompras> getComprasAll(int idNegocio)
+		{
+            return _context.viewCompras.FromSqlRaw("EXEC VIEW_COMPRAS").ToList();
 
-	}
+        }
+
+
+
+    }
 }
