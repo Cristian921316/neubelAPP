@@ -15,15 +15,8 @@
 
 
 
-<h2>@(ProductoId.HasValue ? "Editar Producto" : "Registrar Producto")</h2>
+<h1>@(ProductoId.HasValue ? "Editar Producto" : "Registrar Producto")</h1>
 
-@if (mostrarMensaje)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Producto registrado con éxito.
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
 
 <div class="container mt-5">
     <div class="border p-4 rounded">
@@ -32,12 +25,12 @@
 
             <div class="mb-3">
                 <label for="nombre" class="form-label">Cod-Sofadcon</label>
-                <input type="text" class="form-control" @bind="productosSave.adpro_codigoalterno1" id="codSofadcon">
+                <input type="text" class="form-control" @bind="productosSave.adpro_codigoalterno1" id="codSofadcon" required>
             </div>
 
             <div class="mb-3">
                 <label for="email" class="form-label">Descripcion</label>
-                <input type="text" class="form-control" @bind="productosSave.adpro_descripcion" id="descripcion">
+                <input type="text" class="form-control" @bind="productosSave.adpro_descripcion" id="descripcion" required>
             </div>
 
             <!--validacion si es edicion o nuevo-->
@@ -48,22 +41,23 @@
                     <input type="number" class="form-control" @bind="productosSave.adpro_cantidad" id="cantidad">
                 </div>
 
-               
 
-            }else
+
+            }
+            else
             {
                 <div class="mb-3">
                     <label for="cantidad" class="form-label">Cantidad</label>
                     <input type="number" class="form-control" @bind="productosSave.adpro_cantidad" id="cantidad" disabled>
                 </div>
-              
+
             }
 
             <div class="mb-3">
                 <label for="valor" class="form-label">Valor</label>
                 <input type="number" class="form-control" @bind="productosSave.adpro_valor" id="valor" step="0.01">
             </div>
-           
+
 
             <div class="mb-3">
                 <label for="observacion" class="form-label">Observacion</label>
@@ -75,6 +69,11 @@
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind="productosSave.adpro_iva">
                     <label class="form-check-label" for="flexSwitchCheckDefault">Iva</label>
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="valorIva" class="form-label">Valor Iva</label>
+                <input type="number" class="form-control" @bind="productosSave.adpro_valor_iva" id="valorIva" step="0.01">
             </div>
 
             <div class="mb-3">
@@ -91,13 +90,20 @@
                 </div>
             </div>
 
+            @if (mostrarMensaje)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    Registrado con éxito.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <button type="submit" class="btn btn-primary">Guardar Registro</button>
 
         </EditForm>
 
     </div>
 </div>
-
 
 
 @code {
@@ -161,7 +167,7 @@
             //si se crea un nuevo cliente se envia la bandera como creacion
             guardarOK = true;
             // Desvanecer el mensaje después de 3 segundos
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             mostrarMensaje = false;
             StateHasChanged();
         }

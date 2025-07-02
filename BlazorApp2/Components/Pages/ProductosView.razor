@@ -74,6 +74,7 @@ else
                     <th>VALOR</th>
                     <th>OBSERVACION</th>
                     <th>IVA</th>
+                    <th>VALOR-IVA</th>
                     <th>ICE</th>
                     <th>ESTADO</th>
                     <th>ACCION</th>
@@ -88,8 +89,18 @@ else
                         <td>@producto.adpro_cantidad</td>
                         <td>@producto.adpro_valor</td>
                         <td>@producto.adpro_observacion</td>
-                        <td>@producto.adpro_iva</td>
-                        <td>@producto.adpro_ice</td>
+                        <td>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @bind="producto.adpro_iva" disabled>
+                                </div>
+
+                        </td>
+                        <td>@producto.adpro_valor_iva</td>
+                        <td>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @bind="producto.adpro_ice" disabled>
+                                </div>
+                        </td>
                         <td>
                             <!-- Switch para el campo 'Activo' -->
                             <div class="form-check form-switch">
@@ -155,7 +166,7 @@ else
         {
             if (!_isDataLoaded)
             {
-                productos = await productoServices.getAllProductosAsyncPage(1,10,"");                            
+                productos = productoServices.getAllProductosAsyncPage(1,10,"");                            
                 _isDataLoaded = true;
 
             }
@@ -179,7 +190,7 @@ else
         if (e.Key == "Enter")
         {
             StateHasChanged();
-            productos = await productoServices.getAllProductosAsyncPage(1, 10, searchTerm);
+            productos = productoServices.getAllProductosAsyncPage(1, 10, searchTerm);
 
             // Lógica al presionar Enter
             Console.WriteLine($"Buscando: {searchTerm}");

@@ -330,7 +330,7 @@
 			idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
 
-			productos = await productoServices.getAllProductosCompraAsync();
+			productos = productoServices.getAllProductosCompraAsync();
 			clientes = await clienteService.GetClientesAsyncSalida(idNegocio);
 			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso

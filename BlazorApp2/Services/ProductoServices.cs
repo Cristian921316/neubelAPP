@@ -36,21 +36,13 @@ namespace BlazorApp2.Services
 
         }
 
-        public async Task<List<Productos>> getAllProductosCompraAsync()
+        public List<Productos> getAllProductosCompraAsync()
         {
 
             try
             {
 
-                return await _context.Productos.AsNoTracking().AsNoTracking().Select(p => new Productos
-                {
-                    // Aquí especificas los dos campos que quieres retornar
-                    adpro_codigo = p.adpro_codigo, 
-                    adpro_descripcion = p.adpro_descripcion,
-					adpro_cantidad = p.adpro_cantidad,
-					adpro_valor = p.adpro_valor    
-                })
-                     .ToListAsync();
+                return _context.Productos.FromSql($"SELECT * FROM ADMINV_PRODUCTOS").ToList();
 
 
             }
@@ -62,7 +54,7 @@ namespace BlazorApp2.Services
 
         }
 
-        public async Task<List<Productos>> getAllProductosAsyncPage(int pageNumber, int pageSize,string descripcion)
+        public  List<Productos>  getAllProductosAsyncPage(int pageNumber, int pageSize,string descripcion)
 		{
 
 			try
@@ -70,17 +62,16 @@ namespace BlazorApp2.Services
                 if (descripcion.Length > 0)
                 {
 
-                    return await _context.Productos.Where(p => p.adpro_descripcion.ToLower().Contains(descripcion.ToLower()))
-                                                .Take(pageSize)
-                                                .ToListAsync();
-				}
+                    var parametro = $"%{descripcion}%"; // Agrega comodines para LIKE
+
+                    return _context.Productos.FromSqlRaw($"SELECT TOP 10 * FROM ADMINV_PRODUCTOS WHERE ADPRO_DESCRIPCION LIKE @p0", parametro).ToList();
+
+                }
                 else {
 
-					return await _context.Productos.AsNoTracking().OrderBy(p => p.adpro_descripcion) // ¡Importante ordenar para paginación consistente!												
-												.Take(pageSize)
-												.ToListAsync();
+                    return _context.Productos.FromSql($"SELECT TOP 10 * FROM ADMINV_PRODUCTOS ORDER BY ADPRO_DATECREATED DESC").ToList();
 
-				}
+                }
 
 				
 
