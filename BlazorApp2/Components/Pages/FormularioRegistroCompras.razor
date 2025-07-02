@@ -508,8 +508,12 @@
 
 	private void ActualizarTotales(DetalleCompra trxDetalleAct)
 	{
+			
+		decimal valorIva = (productoSeleccionado.adpro_valor_iva / 100);	
 
-		trxDetalleAct.adtc_iva = trxDetalleAct.adtc_cantidad * trxDetalleAct.adtc_precioUnitario * decimal.Parse("0.15");
+		
+
+		trxDetalleAct.adtc_iva = trxDetalleAct.adtc_cantidad * trxDetalleAct.adtc_precioUnitario * valorIva;
 		trxDetalleAct.adtc_precio_total = trxDetalleAct.adtc_cantidad * trxDetalleAct.adtc_precioUnitario;
 
 		//se encera siempre para que se vuelva a calcular.

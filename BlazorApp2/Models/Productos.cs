@@ -64,7 +64,7 @@ namespace BlazorApp2.Models
         public bool adpro_ice { get; set; }
 
         [Column("ADPRO_VALOR_IVA")]
-        public decimal? adpro_valor_iva { get; set; }
+        public decimal adpro_valor_iva { get; set; }
 
 
 
