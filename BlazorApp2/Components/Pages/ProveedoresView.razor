@@ -43,7 +43,7 @@
     <div class="col-6">
         <div class="input-group flex-nowrap">
             <span class="input-group-text" id="addon-wrapping">Buscar</span>
-            <input type="text" class="form-control" placeholder="Por nombre, apellido, sector..." aria-describedby="addon-wrapping" @bind="searchTerm" />
+            <input type="text" class="form-control" placeholder="Por nombre, apellido, sector..." aria-describedby="addon-wrapping" @bind="searchTerm" @bind:event="oninput" @onkeydown="BuscarConEnter" />
         </div>
     </div>
 
@@ -87,7 +87,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var prov in FiltrarProveedores)
+                @foreach (var prov in proveedores)
                 {
                     <tr>
                         <td>@prov.adprv_ruc</td>
@@ -198,7 +198,7 @@ else
 
             idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
-            proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);
+            proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio,"");
 
         } catch (Exception ex)
         {
@@ -234,7 +234,7 @@ else
         await proveedoresService.GuardarProveedor(nuevoProv,guardaOK);
 
         //se envia a recuperar los registros.
-        proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio);
+        proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio,"");
 
         //Actualiza mensj
         mostrarMensaje = true;
@@ -281,9 +281,21 @@ else
         }
     }
 
+    private async Task BuscarConEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            StateHasChanged();
+            proveedores = await proveedoresService.getAllProveedorAsyncPage(idNegocio, searchTerm);
 
-    private IEnumerable<Proveedor> FiltrarProveedores =>
-         proveedores.Where(prov => string.IsNullOrEmpty(searchTerm) || prov.adprv_nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+            // Lógica al presionar Enter
+            Console.WriteLine($"Buscando: {searchTerm}");
+            // Aquí puedes llamar a tu método de búsqueda o similar
+        }
+    }
+
+    /*private IEnumerable<Proveedor> FiltrarProveedores =>
+         proveedores.Where(prov => string.IsNullOrEmpty(searchTerm) || prov.adprv_nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));*/
 
 
 }

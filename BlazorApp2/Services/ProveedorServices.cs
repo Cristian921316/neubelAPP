@@ -41,12 +41,22 @@ namespace BlazorApp2.Services
 
 		}
 
-        public async Task<List<Proveedor>> getAllProveedorAsyncPage(int idNegocio)
+        public async Task<List<Proveedor>> getAllProveedorAsyncPage(int idNegocio,string busqueda)
         {
 
             try
             {
-                return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).OrderByDescending(p => p.adprv_datecreated).Take(10).ToListAsync();
+                if (busqueda.Length > 0)
+                {
+					return await _context.Proveedor.Where(p => p.adbu_code == idNegocio && p.adprv_nombre.Contains(busqueda)).OrderByDescending(p => p.adprv_datecreated).Take(10).ToListAsync();
+
+				}
+                else
+                {
+					return await _context.Proveedor.Where(p => p.adbu_code == idNegocio).OrderByDescending(p => p.adprv_datecreated).Take(10).ToListAsync();
+				}
+
+                
 
 
             }
