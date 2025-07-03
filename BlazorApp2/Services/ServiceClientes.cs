@@ -3,7 +3,8 @@
     using BlazorApp2.Components.Pages;
     using BlazorApp2.Data;
     using BlazorApp2.Models;
-    using Microsoft.EntityFrameworkCore;
+	using DocumentFormat.OpenXml.Wordprocessing;
+	using Microsoft.EntityFrameworkCore;
     public class ServiceClientes
     {
         private readonly ApplicationDbContext _context;
@@ -19,15 +20,17 @@
 
 		}
 
-		public async Task<List<Clientes>> GetClientesAsyncSalida(int idNegocio)
+		public List<Clientes> GetClientesAsyncSalida(int idNegocio)
 		{
-			return await _context.Clientes.Where(c => c.adbu_code == idNegocio).AsNoTracking().Select(c => new Clientes
-			{
-				// Aquí especificas los dos campos que quieres retornar
-				adcu_code = c.adcu_code,
-				adcu_name = c.adcu_name				
-			})
-					 .ToListAsync();
+            try
+            {
+                return _context.Clientes.FromSql($"SELECT * FROM ADMPAY_CUSTOMER WHERE ADBU_CODE = {idNegocio} ").ToList();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+			
 
 		}
 

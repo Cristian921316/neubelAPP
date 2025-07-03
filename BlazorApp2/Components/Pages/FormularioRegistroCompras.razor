@@ -336,9 +336,7 @@
 		cabeceraCompra.adbu_code = negocioId;
 		productos = await productoServices.getAllProductosAsync();
 		proveedores = await proveedorService.getAllProveedorAsync(negocioId);
-
-
-		tipoTrxProductos = await tipoTrx.getAllTipoTrx();
+		tipoTrxProductos = tipoTrx.getAllTipoTrx();
 		//Para que cargue solo transacciones de ingreso
 		tipoTrxProductos = tipoTrxProductos.Where(t => t.adtr_signo > 0).ToList();
 
@@ -436,7 +434,7 @@
 					newDetalleTrx.adpro_nombre = producto.adpro_descripcion;
 					newDetalleTrx.adpro_codigo = producto.adpro_codigo;
 					newDetalleTrx.adtc_precioUnitario = producto.adpro_valor;
-					newDetalleTrx.adtc_iva = newDetalleTrx.adtc_precioUnitario * decimal.Parse("0.15");
+					newDetalleTrx.adtc_iva = newDetalleTrx.adtc_precioUnitario * (producto.adpro_valor_iva/100);
 					listDetalleTrx.Add(newDetalleTrx);
 
 
@@ -465,7 +463,12 @@
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine(ex.Message);
+			mesageError = true;
+			strMensajeMostrar = "ERROR "+ex.Message +"CONTACTE CON EL ADMINISTRADOR DEL SISTEMA!";
+
+			await Task.Delay(1000);
+			mesageError = false;
+			StateHasChanged();
 			return 0;
 
 		}

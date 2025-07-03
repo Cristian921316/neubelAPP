@@ -16,12 +16,12 @@ namespace BlazorApp2.Services
 			_context = context;
 		}
 
-		public async Task<List<TipoTrxProducto>> getAllTipoTrx()
+		public List<TipoTrxProducto> getAllTipoTrx()
 		{
 
 			try
 			{
-				return await _context.TipoTrxProductos.ToListAsync();
+				return _context.TipoTrxProductos.FromSql($"SELECT * FROM ADINV_TIPO_TRANSACC").ToList();
 
 
 			}

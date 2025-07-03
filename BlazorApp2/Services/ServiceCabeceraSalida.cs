@@ -13,12 +13,12 @@ namespace BlazorApp2.Services
 			_context = context;
 		}
 
-		public async Task<List<CabeceraSalida>> getSalidas(int idNegocio)
+		public List<CabeceraSalida> getSalidas(int idNegocio)
 		{
 
 			try
 			{
-				return await _context.CabeceraSalidas.AsNoTracking().ToListAsync();
+				return  _context.CabeceraSalidas.FromSql($"SELECT * FROM ADINV_CABECERA_SALIDA").ToList();
 
 			}
 			catch (Exception ex)

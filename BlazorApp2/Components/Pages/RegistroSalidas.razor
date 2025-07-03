@@ -270,7 +270,7 @@
 
 		idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
-		salidas = await sertviceCabeceraSalida.getSalidas(idNegocio);
+		salidas = sertviceCabeceraSalida.getSalidas(idNegocio);
 
 
 	}
@@ -317,15 +317,15 @@
 		
 	}
 
-	private async void CerrarModalView()
+	/*private async void CerrarModalRegistro()
 	{
 
-		/*mostrarCompraLectura = false;
+		mostrarFormularioModal = false;
 		StateHasChanged();
-		await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", modalLectura);*/
+		await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
 
-	}
+	}*/
 
 	// Este método se ejecuta cuando el formulario hijo (FormularioRegistroCompras) invoca OnFormSubmitted
 	private async Task HandleFormSubmitted(bool success)
@@ -337,7 +337,7 @@
 			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
 			//Se envia actualizar las compras
-			salidas = await sertviceCabeceraSalida.getSalidas(idNegocio);
+			salidas = sertviceCabeceraSalida.getSalidas(idNegocio);
 
 			mostrarFormularioModal = false;
 			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM

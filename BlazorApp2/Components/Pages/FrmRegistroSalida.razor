@@ -330,9 +330,9 @@
 			idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
 
-			productos = productoServices.getAllProductosCompraAsync();
-			clientes = await clienteService.GetClientesAsyncSalida(idNegocio);
-			tipoTrxProductos = await tipoTrx.getAllTipoTrx();
+			productos = await productoServices.getAllProductosAsync();
+			clientes = clienteService.GetClientesAsyncSalida(idNegocio);
+			tipoTrxProductos = tipoTrx.getAllTipoTrx();
 			//Para que cargue solo transacciones de ingreso
 			tipoTrxProductos = tipoTrxProductos.Where(t => t.adtr_signo < 0).ToList();
 
@@ -346,7 +346,7 @@
 		busquedaProducto = producto.adpro_descripcion;
 		await CargarDetalle(producto);
 
-
+		busquedaProducto = string.Empty;
 		mostrarSugerencias = false;
 	}
 
@@ -439,7 +439,7 @@
 					newDetalleTrx.AdproNombre = producto.adpro_descripcion;
 					newDetalleTrx.AdproCodigo = producto.adpro_codigo;
 					newDetalleTrx.AdtcPrecioUnitario = producto.adpro_valor;
-					newDetalleTrx.AdtcIva = newDetalleTrx.AdtcPrecioUnitario * decimal.Parse("0.15");
+					newDetalleTrx.AdtcIva = newDetalleTrx.AdtcPrecioUnitario * (producto.adpro_valor_iva/100);
 					listDetalleTrx.Add(newDetalleTrx);
 
 
@@ -530,7 +530,7 @@
 
 		}
 
-		trxDetalleAct.AdtcIva = trxDetalleAct.AdtcCantidad * trxDetalleAct.AdtcPrecioUnitario * decimal.Parse("0.15");
+		trxDetalleAct.AdtcIva = trxDetalleAct.AdtcCantidad * trxDetalleAct.AdtcPrecioUnitario * (productoSeleccionado.adpro_valor_iva/100);
 		trxDetalleAct.AdtcPrecioTotal = trxDetalleAct.AdtcCantidad * trxDetalleAct.AdtcPrecioUnitario;
 		
 		cabeceraSalida.AdcsaSubtotal = 0;
