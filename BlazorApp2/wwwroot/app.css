@@ -62,8 +62,19 @@ h1:focus {
     line-height: 1; /* Valor para líneas de texto muy juntas, o 1.2 para un poco más de espacio */
 }
 
-    /* Si los botones son demasiado grandes, puedes hacerlos más pequeños también */
-    .table-compras .btn {
-        padding: 0.1rem 0.3rem; /* Padding más pequeño para botones */
-        font-size: 0.75rem; /* Fuente más pequeña para botones */
-    }
+/* Si los botones son demasiado grandes, puedes hacerlos más pequeños también */
+.table-compras .btn {
+    padding: 0.1rem 0.3rem; /* Padding más pequeño para botones */
+    font-size: 0.75rem; /* Fuente más pequeña para botones */
+}
+
+/* CSS personalizado para ajustar el tamaño de fuente */
+.small-font {
+    font-size: 0.75rem; /* Equivalente a 12px */
+}
+
+.small-font-input {
+    font-size: 0.75rem; /* Ajusta la fuente del input */
+    height: calc(1.5em + 0.5rem + 2px); /* Ajusta la altura del input para que coincida con el texto más pequeño */
+    padding: 0.25rem 0.5rem; /* Reduce el padding para un input más compacto */
+}
