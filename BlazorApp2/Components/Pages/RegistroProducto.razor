@@ -98,6 +98,14 @@
                 </div>
             }
 
+            @if (mostrarError)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @strMensajeError
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <button type="submit" class="btn btn-primary">Guardar Registro</button>
 
         </EditForm>
@@ -113,10 +121,10 @@
 
     // Aquí debes declarar la variable
     private List<Productos> productos;
-    private string searchTerm = string.Empty;
+    private string searchTerm = string.Empty, strMensajeError = string.Empty;
     private Negocio negocio;
 
-    private bool mostrarMensaje = false, guardarOK = true;
+    private bool mostrarMensaje = false,mostrarError=false, guardarOK = true;
 
     //objeto productos a guardar
     private Productos productosSave = new Productos();
@@ -132,7 +140,7 @@
         var userClaims = user.Identities.First().Claims.ToList();
         idUser = userClaims[0].Value;
         idNegocio = serviceUser.getIdNegocioByUser(idUser);
-        
+
 
         if (ProductoId.HasValue)
         {
@@ -155,8 +163,19 @@
             productosSave.adbu_code = idNegocio;
             productosSave.adpro_userupdate = idUser;
 
+            //se valida si esta con iva que coloque el valor del iva
+            if (productosSave.adpro_iva && productosSave.adpro_valor_iva<=0)
+            {
+                mostrarError = true;
 
-            //se marca como modificado
+                strMensajeError = "ERROR, Si tiene iva debe colocar un valor > 0";
+
+                await Task.Delay(1000);
+                mostrarError = false;
+                StateHasChanged();
+
+                return;
+            }
 
 
             await productoServices.Guardar(productosSave, guardarOK);

@@ -54,7 +54,25 @@ namespace BlazorApp2.Services
 
         }
 
-        public  List<Productos>  getAllProductosAsyncPage(int pageNumber, int pageSize,string descripcion)
+		public List<ProductoFind> getAllProductosFind()
+		{
+
+			try
+			{
+
+				return _context.productoFinds.FromSql($"SELECT ADPRO_CODIGO,ADPRO_DESCRIPCION,ADPRO_CANTIDAD FROM ADMINV_PRODUCTOS").ToList();
+
+
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+
+		}
+
+		public  List<Productos>  getAllProductosAsyncPage(int pageNumber, int pageSize,string descripcion)
 		{
 
 			try

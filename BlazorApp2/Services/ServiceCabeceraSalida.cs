@@ -1,5 +1,6 @@
 ﻿using BlazorApp2.Data;
 using BlazorApp2.Models;
+using BlazorApp2.Models.VIEWS;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp2.Services
@@ -29,7 +30,22 @@ namespace BlazorApp2.Services
 
 		}
 
-		public async Task<bool> saveCabeceraSalida(CabeceraSalida salida, bool guardarOK)
+        public List<ViewSalida> getSalidasAll(int idNegocio,string tipoBusqueda)
+        {
+			try
+			{
+				return _context.viewSalida.FromSqlRaw("EXEC VIEW_SALIDAS @tipoReporte = {0}", tipoBusqueda).ToList();
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+
+            
+
+        }
+
+        public async Task<bool> saveCabeceraSalida(CabeceraSalida salida, bool guardarOK)
 		{
 			try
 			{

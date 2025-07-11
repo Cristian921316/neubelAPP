@@ -19,6 +19,14 @@
 
 <PageTitle>Compras</PageTitle>
 
+@if (mesageError)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		@strMensajeMostrar
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+
 <div class="row">
 
 	<div class="col-9">
@@ -162,7 +170,7 @@
 						</div>
 						<div class="card-body">
 							<div class="table-responsive">
-								<table class="table table-striped table-bordered">
+								<table class="table table-striped table-bordered table-hover table-compras" style="font-size: 12px;">
 									<thead>
 										<tr>
 											<th>Producto</th>
@@ -268,19 +276,35 @@
 	private int idNegocio = 5; //valor por defecto
 	DateTime? _registro;
 	private decimal _subtotal, _iva, _total;
+	private bool mesageError=false;
+	private string strMensajeMostrar = string.Empty;
 
 	protected override async Task OnInitializedAsync()
-	{		
+	{
 
+		try
+		{
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = authState.User;
+			var userClaims = user.Identities.First().Claims.ToList();
+			idUser = userClaims[0].Value;
 
-		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-		var user = authState.User;
-		var userClaims = user.Identities.First().Claims.ToList();
-		idUser = userClaims[0].Value;
+			idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
-		idNegocio = serviceUser.getIdNegocioByUser(idUser);
+			compras = serviceCabeceraCompra.getComprasAll(idNegocio);
 
-		compras = serviceCabeceraCompra.getComprasAll(idNegocio);
+		} catch (Exception ex)
+		{
+			mesageError = true;
+			strMensajeMostrar = "[ERROR] " + ex.Message + " CONTACTE CON EL ADMINISTRADOR DEL SISTEMA";
+			StateHasChanged();
+			await Task.Delay(2000);
+			mesageError = false;
+			StateHasChanged();
+			
+		}
+
+		
 
 
 	}

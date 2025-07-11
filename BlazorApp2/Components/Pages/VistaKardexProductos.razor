@@ -104,7 +104,7 @@
 @code {
 
     // Aquí debes declarar la variable
-    private List<Productos> productos;
+    private List<ProductoFind> productos;
     private List<MovimientosProducto> vistaKardex = new List<MovimientosProducto>();
     private string searchTerm = string.Empty, strMensajeMostrar = string.Empty;
     private Negocio negocio;
@@ -119,17 +119,17 @@
     private decimal stockActual=0;
     private DateTime fechaInicio = DateTime.Now;
     private DateTime fechaFin = DateTime.Now;
-    private Productos? productoSeleccionado;
+    private ProductoFind? productoSeleccionado;
     private string busquedaProducto = string.Empty;
     private bool mostrarSugerencias = false;
-    private List<Productos> productosFiltrados = new();
+    private List<ProductoFind> productosFiltrados = new();
     // Este método se ejecuta cuando el componente se inicializa
     protected override async Task OnInitializedAsync()
     {
         try
         {
 
-            productos = productoServices.getAllProductosCompraAsync();
+            productos = productoServices.getAllProductosFind();
         }
         catch (Exception ex)
         {
@@ -145,7 +145,7 @@
 
     }
 
-    private async void SeleccionarProducto(Productos producto)
+    private async void SeleccionarProducto(ProductoFind producto)
     {
         productoSeleccionado = producto;
         busquedaProducto = producto.adpro_descripcion;

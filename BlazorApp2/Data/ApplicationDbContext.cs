@@ -38,6 +38,10 @@ namespace BlazorApp2.Data
 
         public DbSet<ViewCompras> viewCompras { get; set; }
 
+		public DbSet<ProductoFind> productoFinds { get; set; }
+
+        public DbSet<ViewSalida> viewSalida { get; set; }
+
 
     }
 }

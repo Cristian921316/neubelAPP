@@ -1,4 +1,5 @@
 ﻿@page "/registroSalidas"
+@using BlazorApp2.Models.VIEWS
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using Microsoft.AspNetCore.Authorization
@@ -43,10 +44,12 @@
 			<table class="table table-striped table-bordered table-hover table-compras" style="font-size: 10px;">
 				<thead>
 					<tr>
+						<th>FECHA_VENTA</th>
+						<th>FECHA_REGISTRO</th>
 						<th>GUIA</th>
-						<th>VENDEDOR</th>
-						<th>OBSERVACION</th>
-						<th>REGISTRO</th>
+						<th>CLIENTE</th>
+						<th>OBSERVACION</th>						
+						<th>TOTAL</th>
 						<th>ACCION</th>
 					</tr>
 				</thead>
@@ -55,10 +58,12 @@
 					@foreach (var salida in FiltrarSalidas)
 					{
 						<tr>
-							<td>@salida.AdcsaGuia</td>
-							<td>@salida.AdcsaVendedor</td>
-							<td>@salida.Adcsa_observacion</td>
-							<td>@salida.AdcsaFechaVenta</td>							
+							<td>@salida.FechaVenta</td>
+							<td>@salida.FechaRegistro</td>
+							<td>@salida.Guia</td>
+							<td>@salida.Cliente</td>
+							<td>@salida.Observacion</td>
+							<td>@salida.Total</td>
 							<td>
 								<!-- Botón de editar -->
 								<button class="btn btn-success btn-sm" @onclick="() => VisualizarSalida(salida)">
@@ -128,11 +133,11 @@
 						<div class="card-body">
 							<div class="row mb-3">
 								<div class="col-md-6">
-									<label for="factura" class="form-label">Factura</label>
+									<label for="factura" class="form-label">Guia</label>
 									<input type="text" id="factura" class="form-control" @bind="_factura" disabled>
 								</div>
 								<div class="col-md-6">
-									<label for="comprador" class="form-label">Comprador</label>
+									<label for="comprador" class="form-label">Vendedor</label>
 									<input type="text" id="comprador" class="form-control" @bind="_comprador" disabled>
 								</div>
 							</div>
@@ -142,8 +147,8 @@
 									<input type="date" id="registro" class="form-control" @bind="_registro" disabled>
 								</div>
 								<div class="col-md-6">
-									<label for="proveedor" class="form-label">Proveedor</label>
-									<input type="text" id="proveedor" class="form-control" disabled>
+									<label for="cliente" class="form-label">Cliente</label>
+									<input type="text" id="cliente" @bind="_cliente" class="form-control" disabled>
 								</div>
 							</div>
 						</div>
@@ -155,7 +160,7 @@
 						</div>
 						<div class="card-body">
 							<div class="table-responsive">
-								<table class="table table-striped table-bordered">
+								<table class="table table-striped table-bordered table-hover table-compras" style="font-size: 12px;">
 									<thead>
 										<tr>
 											<th>Producto</th>
@@ -252,10 +257,10 @@
 	private bool mostrarFormularioModal = false, mostrarCompraLectura=false;
 	private string ModalId = "registroSalidaModal", modalLectura="lecturaSalida";
 	private int idNegocio = 5;
-	private List<CabeceraSalida> salidas = new List<CabeceraSalida>();
+	private List<ViewSalida> salidas = new List<ViewSalida>();
 	private List<DetalleSalida> detalles = new List<DetalleSalida>();
 	Guid _idCompra = Guid.Empty;
-	private string _factura, _comprador, _observacion;
+	private string _factura, _comprador, _observacion,_cliente;
 	DateTime? _registro;
 	private decimal _subtotal, _iva, _total;
 
@@ -270,7 +275,7 @@
 
 		idNegocio = serviceUser.getIdNegocioByUser(idUser);
 
-		salidas = sertviceCabeceraSalida.getSalidas(idNegocio);
+		salidas = sertviceCabeceraSalida.getSalidasAll(idNegocio, "VISTA_SALIDA");
 
 
 	}
@@ -297,18 +302,18 @@
 
 	}
 
-	private async void VisualizarSalida(CabeceraSalida salida)
+	private async void VisualizarSalida(ViewSalida salida)
 	{
 
-		_idCompra = salida.AdcsaCodigo;
-		_factura = salida.AdcsaGuia;
-		_comprador = salida.AdcsaVendedor;
-		_observacion = salida.Adcsa_observacion;
-		_registro = salida.AdcsaFechaVenta;
-		_subtotal = salida.AdcsaSubtotal;
-		_iva = salida.AdcsaIva;
-		_total = salida.AdcsaTotal;
-		detalles = await serviceDetalleSalida.GetDetalleSalidasAsync(salida.AdcsaCodigo);
+		_idCompra = salida.IdCompra;
+		_factura = salida.Guia;		
+		_observacion = salida.Observacion;
+		_cliente = salida.Cliente;
+		_registro = salida.FechaVenta;
+		_subtotal = salida.Subtotal;
+		_iva = salida.Iva;
+		_total = salida.Total;
+		detalles = await serviceDetalleSalida.GetDetalleSalidasAsync(salida.IdCompra);
 
 		mostrarCompraLectura = true;
 		// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario
@@ -337,7 +342,7 @@
 			await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", ModalId);
 
 			//Se envia actualizar las compras
-			salidas = sertviceCabeceraSalida.getSalidas(idNegocio);
+			salidas = sertviceCabeceraSalida.getSalidasAll(idNegocio, "VISTA_SALIDA");
 
 			mostrarFormularioModal = false;
 			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
@@ -351,12 +356,12 @@
 		}
 	}
 
-	private IEnumerable<CabeceraSalida> FiltrarSalidas =>
+	private IEnumerable<ViewSalida> FiltrarSalidas =>
 	salidas.Where(salida =>
 		string.IsNullOrEmpty(searchTerm) ||
-		(salida.AdcsaGuia != null && salida.AdcsaGuia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-		(salida.Adcsa_observacion != null && salida.Adcsa_observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-		(salida.AdcsaVendedor != null && salida.AdcsaVendedor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+		(salida.Guia != null && salida.Guia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.Observacion != null && salida.Observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.Cliente != null && salida.Cliente.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 
 
 }
