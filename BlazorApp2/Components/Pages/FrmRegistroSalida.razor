@@ -23,17 +23,10 @@
 		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 	</div>
 }
-@if (mesageError)
-{
-	<div class="alert alert-danger alert-dismissible fade show" role="alert">
-		@strMensajeMostrar
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
-}
 
 <div class="container mt-5">
 	<div class="border p-4 rounded">
-		<div class="row">
+		<!--<div class="row">-->
 			<div class="col-md-12">
 				<div class="row">
 					<div class="col-md-6">
@@ -43,7 +36,7 @@
 								<label for="nombre" class="form-label">Tipo Ingreso</label>
 							</div>
 							<div class="col-md-6">
-								<select class="form-select" @bind="tipoIngreso">	
+								<select class="form-select form-select-sm small-font-input" @bind="tipoIngreso">
 									<option value="seleccionar">--seleccionar--</option>
 									@foreach (var tipo in tipoTrxProductos)
 									{
@@ -54,11 +47,11 @@
 
 
 							<div class="col-md-6">
-								<label for="nombre" class="form-label">Guia</label>
+								<label for="nombre" class="form-label small-font">Guia</label>
 							</div>
 
 							<div class="col-md-6">
-								<input type="text" class="form-control" @bind="cabeceraSalida.AdcsaGuia" placeholder="###-###-#########" aria-describedby="addon-wrapping" />
+								<input type="text" class="form-control small-font-input" @bind="cabeceraSalida.AdcsaGuia" placeholder="###-###-#########" aria-describedby="addon-wrapping" />
 							</div>
 
 						</div>
@@ -70,40 +63,39 @@
 						<div class="row">
 
 							<div class="col-md-6">
-								<label for="nombre" class="form-label">Vendedor</label>
+								<label for="nombre" class="form-label small-font">Vendedor</label>
 							</div>
 
 							<div class="col-md-6">
-								<input type="text" class="form-control" @bind="cabeceraSalida.AdcsaVendedor" aria-describedby="addon-wrapping" disabled />
+								<input type="text" class="form-control small-font-input" @bind="cabeceraSalida.AdcsaVendedor" aria-describedby="addon-wrapping" disabled />
 							</div>
 
 
 							<div class="col-md-6">
-								<label for="nombre" class="form-label">Fecha</label>
+								<label for="nombre" class="form-label small-font">Fecha</label>
 							</div>
 
 							<div class="col-md-6">
-								<input type="date" class="form-control" @bind="cabeceraSalida.AdcsaFechaVenta" aria-describedby="addon-wrapping" />
+								<input type="date" class="form-control small-font-input" @bind="cabeceraSalida.AdcsaFechaVenta" aria-describedby="addon-wrapping" />
 							</div>
-
-
 						</div>
-
-
 					</div>
+
 				</div>
 			</div>
-		</div>
-		<!--ingreso proveedores-->
+
+		<!--</div>-->
+
+		<!--ingreso clientes-->
 
 		<div class="row">
 			<div class="col-md-3">
-				<label for="nombre" class="form-label">Cliente</label>
+				<label for="nombre" class="form-label small-font">Cliente</label>
 			</div>
 
 			<div class="col-md-9">
 
-				<InputText id="cliente" placeholder="Cliente..." class="form-control" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
+				<InputText id="cliente" placeholder="Cliente..." class="form-control small-font-input" autocomplete="off" @bind-Value=@busquedaCliente @oninput="(e) => FiltrarClientes(e.Value.ToString())" />
 				<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerenciasCliente)">
 					@foreach (var cliente in clientesFiltrado)
 					{
@@ -117,12 +109,38 @@
 
 			</div>
 
-
 		</div>
+
+		<!--codigo Equipo y Documento-->
+
+        <div class="row">
+
+            <div class="col-md-3">
+                <label for="nombre" class="form-label small-font">Cod-Equipo</label>
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" class="form-control small-font-input" @bind="cabeceraSalida.adcsa_codigo_equipo" aria-describedby="addon-wrapping" />
+            </div>
+
+
+            <div class="col-md-3">
+                <label for="nombre" class="form-label small-font">Documento</label>
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" class="form-control small-font-input" @bind="cabeceraSalida.adcsa_documento" aria-describedby="addon-wrapping" />
+            </div>
+        </div>
+		
 
 
 	</div>
 </div>
+
+
+
+
 
 <!--ingreso productos-->
 <div class="container mt-5">
@@ -131,7 +149,7 @@
 		<div class="col-6">
 
 
-			<InputText id="producto" placeholder="Buscar producto..." class="form-control" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
+			<InputText id="producto" placeholder="Buscar producto..." class="form-control small-font-input" autocomplete="off" @bind-Value=@busquedaProducto @oninput="(e) => FiltrarProductos(e.Value.ToString())" />
 			<ul class="list-group" style="max-height: 150px; overflow-y: auto;" hidden="@(!mostrarSugerencias)">
 				@foreach (var producto in productosFiltrados)
 				{
@@ -151,13 +169,25 @@
 	</div>
 
 </div>
+
+<!--ALERTA DE ERRORES-->
+
+@if (mesageError)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		@strMensajeMostrar
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+}
+
+
 <!--DETALLE DE COMPRAS-->
 
 <div class="container mt-5">
 	<div class="border p-4 rounded">
 
 		<div class="table-responsive">
-			<table class="table table-striped table-bordered table-hover" style="font-size: 12px;">
+			<table class="table table-striped table-bordered table-hover" style="font-size: 10px;">
 				<thead>
 					<tr>
 						<th>DESCRIPCION</th>
@@ -239,28 +269,28 @@
 			<div class="col-md-6">
 				<div class="row align-items-center mb-2">
 					<div class="col-md-4">
-						<label for="adcom_subtotal" class="form-label mb-0 text-md-end">Subtotal:</label>
+						<label for="adcom_subtotal" class="form-label small-font mb-0 text-md-end">Subtotal:</label>
 					</div>
 					<div class="col-md-8">
-						<input type="text" id="adcom_subtotal" class="form-control text-end" @bind="cabeceraSalida.AdcsaSubtotal" disabled />
+						<input type="text" id="adcom_subtotal" class="form-control small-font-input text-end" @bind="cabeceraSalida.AdcsaSubtotal" disabled />
 					</div>
 				</div>
 
 				<div class="row align-items-center mb-2">
 					<div class="col-md-4">
-						<label for="adcom_iva" class="form-label mb-0 text-md-end">IVA:</label>
+						<label for="adcom_iva" class="form-label small-font mb-0 text-md-end">IVA:</label>
 					</div>
 					<div class="col-md-8">
-						<input type="text" id="adcom_iva" class="form-control text-end" @bind="cabeceraSalida.AdcsaIva" disabled />
+						<input type="text" id="adcom_iva" class="form-control small-font-input text-end" @bind="cabeceraSalida.AdcsaIva" disabled />
 					</div>
 				</div>
 
 				<div class="row align-items-center mb-2">
 					<div class="col-md-4">
-						<label for="adcom_total" class="form-label mb-0 text-md-end">Total:</label>
+						<label for="adcom_total" class="form-label small-font mb-0 text-md-end">Total:</label>
 					</div>
 					<div class="col-md-8">
-						<input type="text" id="adcom_total" class="form-control text-end" @bind="cabeceraSalida.AdcsaTotal" disabled />
+						<input type="text" id="adcom_total" class="form-control small-font-input text-end" @bind="cabeceraSalida.AdcsaTotal" disabled />
 					</div>
 				</div>
 

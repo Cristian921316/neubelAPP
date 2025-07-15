@@ -23,7 +23,7 @@
 	<div class="col-9">
 		<div class="input-group flex-nowrap">
 			<span class="input-group-text" id="addon-wrapping">Buscar</span>
-			<input type="text" class="form-control" placeholder="Por factura,proveedor" aria-describedby="addon-wrapping" @bind="searchTerm" />
+			<input type="text" class="form-control" placeholder="Por Guia,cliente,documento..." aria-describedby="addon-wrapping" @bind="searchTerm" />
 		</div>
 	</div>
 
@@ -46,8 +46,10 @@
 					<tr>
 						<th>FECHA_VENTA</th>
 						<th>FECHA_REGISTRO</th>
+						<th>COD_EQUIPO</th>						
 						<th>GUIA</th>
 						<th>CLIENTE</th>
+						<th>DOCUMENTO</th>
 						<th>OBSERVACION</th>						
 						<th>TOTAL</th>
 						<th>ACCION</th>
@@ -60,8 +62,10 @@
 						<tr>
 							<td>@salida.FechaVenta</td>
 							<td>@salida.FechaRegistro</td>
+							<td>@salida.CodEquipo</td>							
 							<td>@salida.Guia</td>
 							<td>@salida.Cliente</td>
+							<td>@salida.Documento</td>
 							<td>@salida.Observacion</td>
 							<td>@salida.Total</td>
 							<td>
@@ -137,7 +141,7 @@
 								</div>
 								<div class="col-md-6">
 									<label for="comprador" class="form-label small-font">Vendedor</label>
-									<input type="text" id="comprador" class="form-control form-control-sm small-font-input" @bind="_comprador" disabled>
+									<input type="text" id="comprador" class="form-control form-control-sm small-font-input" @bind="_vendedor" disabled>
 								</div>
 							</div>
 							<div class="row mb-3">
@@ -258,7 +262,7 @@
 	private List<ViewSalida> salidas = new List<ViewSalida>();
 	private List<DetalleSalida> detalles = new List<DetalleSalida>();
 	Guid _idCompra = Guid.Empty;
-	private string _factura, _comprador, _observacion,_cliente;
+	private string _factura, _comprador, _observacion,_cliente, _vendedor;
 	DateTime? _registro;
 	private decimal _subtotal, _iva, _total;
 
@@ -308,6 +312,7 @@
 		_observacion = salida.Observacion;
 		_cliente = salida.Cliente;
 		_registro = salida.FechaVenta;
+		_vendedor = salida.Vendedor;
 		_subtotal = salida.Subtotal;
 		_iva = salida.Iva;
 		_total = salida.Total;
@@ -359,6 +364,8 @@
 		string.IsNullOrEmpty(searchTerm) ||
 		(salida.Guia != null && salida.Guia.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
 		(salida.Observacion != null && salida.Observacion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.CodEquipo != null && salida.CodEquipo.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+		(salida.Documento != null && salida.Documento.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
 		(salida.Cliente != null && salida.Cliente.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
 
 

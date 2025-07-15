@@ -66,5 +66,13 @@ namespace BlazorApp2.Models
 		[Column("ADCSA_DATEUPDATE")]
 		public DateTime? AdcsaDateUpdate { get; set; } // Se usa DateTime? si el campo es NULLable en la BD
 
+		[Column("ADCSA_CODIGO_EQUIPO")]
+		public string? adcsa_codigo_equipo { get; set; }
+
+		[Column("ADCSA_DOCUMENTO")]
+		public string? adcsa_documento { get; set; }
+
+
+
 	}
 }
