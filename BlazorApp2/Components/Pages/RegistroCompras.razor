@@ -2,6 +2,7 @@
 @using BlazorApp2.Services
 @using BlazorApp2.Models
 @using BlazorApp2.Models.VIEWS
+@using BlazorApp2.Utils
 @using Microsoft.AspNetCore.Authorization
 @using System.Diagnostics
 @rendermode InteractiveServer
@@ -26,10 +27,14 @@
 		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 	</div>
 }
+@if (!string.IsNullOrEmpty(MensajeEstado))
+{
+	<div class="alert alert-info mt-3">@MensajeEstado</div>
+}
 
 <div class="row">
 
-	<div class="col-9">
+	<div class="col-6">
 		<div class="input-group flex-nowrap">
 			<span class="input-group-text" id="addon-wrapping">Buscar</span>
 			<input type="text" class="form-control" placeholder="Por factura,proveedor" aria-describedby="addon-wrapping" @bind="searchTerm" />
@@ -41,6 +46,14 @@
 			<i class="bi bi-file-earmark-arrow-down me-2"></i>
 			Agregar
 		</button>
+	</div>
+
+	<div class="col-3">
+
+		<button class="btn btn-success" @onclick="ExportarDatos">
+			<i class="fas fa-file-excel"></i>Exportar
+		</button>
+
 	</div>
 
 </div>
@@ -273,6 +286,7 @@
 	private decimal _subtotal, _iva, _total;
 	private bool mesageError=false;
 	private string strMensajeMostrar = string.Empty;
+	private string MensajeEstado = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -296,10 +310,10 @@
 			await Task.Delay(2000);
 			mesageError = false;
 			StateHasChanged();
-			
+
 		}
 
-		
+
 
 
 	}
@@ -339,12 +353,12 @@
 		_iva = compra.Iva;
 		_total = compra.Valor;
 		detalles = await serviceDetalleCompra.GetDetalleComprasAsync(compra.IdCompra);
-		
+
 		mostrarCompraLectura = true;
 		// 2. Dispara un StateHasChanged para que Blazor re-renderice y muestre el formulario	
 		StateHasChanged(); 
 		await JSRuntime.InvokeVoidAsync("modalHandler.showModal", modalLectura);
-		
+
 
 
 	}
@@ -355,7 +369,7 @@
 		mostrarCompraLectura = false;
 		StateHasChanged();
 		await JSRuntime.InvokeVoidAsync("modalHandler.hideModal", modalLectura);
-		
+
 
 	}
 
@@ -374,15 +388,41 @@
 			mostrarFormularioModal = false;
 			StateHasChanged(); // Notificar a Blazor para que elimine el componente del DOM
 
-			
+
 		}
 		else
 		{
-			
+
 			Console.WriteLine("Operación de formulario no exitosa o cancelada. Modal permanece abierto.");
 		}
 	}
 
+	//ExportData
+	private async Task ExportarDatos()
+	{
+		try
+		{
+			StateHasChanged();
+			MensajeEstado = "Generando archivo...";
+			//se genera los datos
+			
+
+			// Llama a tu función genérica de exportación
+			var excelStream = ExportExcel.ExportToExcel(compras, "ReporteIngresos.xlsx", "Lista de Ingresos");
+
+			// --- Opción 1: Descargar el archivo directamente en el navegador (recomendado para Blazor) ---
+			// Usa JavaScript para descargar el MemoryStream como un archivo
+			await JSRuntime.InvokeVoidAsync("saveAsFile", "ReporteIngresos.xlsx", Convert.ToBase64String(excelStream.ToArray()));
+
+			MensajeEstado = "";
+		}
+		catch (Exception ex)
+		{
+			MensajeEstado = $"Error al exportar a Excel: {ex.Message}";
+			MensajeEstado = "";
+			// Aquí podrías loggear el error
+		}
+	}
 
 
 	private IEnumerable<ViewCompras> FiltrarCompras =>
