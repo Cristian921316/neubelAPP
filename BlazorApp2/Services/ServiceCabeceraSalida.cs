@@ -39,13 +39,36 @@ namespace BlazorApp2.Services
 			catch (Exception ex)
 			{
 				throw;
-			}
-
-            
+			}            
 
         }
 
-        public async Task<bool> saveCabeceraSalida(CabeceraSalida salida, bool guardarOK)
+		public List<ViewSalidaDetallado> getSalidaDetallado(int idNegocio, string tipoBusqueda,string busqueda)
+		{
+			try
+			{
+				//Where(p => p.adbu_code == idNegocio && p.adprv_nombre.Contains(busqueda)).OrderByDescending(p => p.adprv_datecreated).Take(10).ToListAsync();
+
+				if (busqueda.Length > 0)
+				{
+					return _context.viewSalidaDetallado.FromSqlRaw("EXEC VIEW_SALIDAS @tipoReporte = {0},@busqueda = {1}", tipoBusqueda, busqueda).ToList();
+				}
+				else
+				{
+                    return _context.viewSalidaDetallado.FromSqlRaw("EXEC VIEW_SALIDAS @tipoReporte = {0}", tipoBusqueda).ToList();
+                }
+                    
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+
+
+
+		}
+
+		public async Task<bool> saveCabeceraSalida(CabeceraSalida salida, bool guardarOK)
 		{
 			try
 			{

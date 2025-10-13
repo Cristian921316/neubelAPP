@@ -42,6 +42,8 @@ namespace BlazorApp2.Data
 
         public DbSet<ViewSalida> viewSalida { get; set; }
 
+		public DbSet<ViewSalidaDetallado> viewSalidaDetallado  { get; set; }
 
-    }
+
+	}
 }
