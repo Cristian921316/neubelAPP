@@ -19,6 +19,11 @@
 
 <PageTitle>SalidasDetallado</PageTitle>
 
+@if (!string.IsNullOrEmpty(MensajeEstado))
+{
+	<div class="alert alert-info mt-3">@MensajeEstado</div>
+}
+
 <div class="row">
 
 	<div class="col-8">
